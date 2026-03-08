@@ -88,7 +88,7 @@ to{opacity:1;transform:scale(1) translateY(0)}}
 
 to{opacity:1;transform:scale(1) translateY(0)}}
 
-/* ── Home Icon ── */
+
 .nexoku-home-btn {
   background: none; border: none; cursor: pointer;
   color: var(--text-muted, #55556a);
@@ -101,7 +101,7 @@ to{opacity:1;transform:scale(1) translateY(0)}}
 .nexoku-home-btn:active { transform: scale(.93); }
 .nexoku-home-btn svg { width: 20px; height: 20px; display: block; }
 
-/* ── Exit Popup ── */
+
 #exit-overlay {
   position: fixed; inset: 0;
   background: rgba(10,10,20,.82);
@@ -174,6 +174,35 @@ to{opacity:1;transform:scale(1) translateY(0)}}
 }
 .exit-keep-btn:hover { background: #1a1a2e; border-color: #2e2e50; color: #e8e8f5; transform: translateY(-1px); }
 .exit-keep-btn:active { transform: scale(.97); }
+
+/* ── Home Icon ── */
+.nexoku-home-btn{background:none;border:none;cursor:pointer;color:var(--text-muted,#55556a);display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;transition:background .15s,color .15s,transform .15s;flex-shrink:0;padding:0;touch-action:manipulation}
+.nexoku-home-btn:hover{background:rgba(245,197,24,.1);color:var(--gold,#F5C518);transform:scale(1.08)}
+.nexoku-home-btn:active{transform:scale(.93)}
+.nexoku-home-btn svg{width:20px;height:20px;display:block}
+
+/* ── Exit Popup ── */
+#exit-overlay{position:fixed;inset:0;background:rgba(10,10,20,.85);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#exit-overlay.show{display:flex}
+#exit-overlay.show .exit-card{animation:exitCardIn .35s cubic-bezier(.34,1.56,.64,1) both}
+#exit-overlay.hide .exit-card{animation:exitCardOut .22s ease both}
+#exit-overlay.hide{animation:exitBgOut .22s ease both}
+.exit-card{background:#131320;border:1px solid #252545;border-radius:22px;padding:clamp(28px,6vw,40px) clamp(24px,5vw,36px);max-width:320px;width:100%;text-align:center;position:relative;box-shadow:0 32px 80px rgba(0,0,0,.7)}
+.exit-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#F5C518,#ffe066,transparent);border-radius:22px 22px 0 0}
+.exit-home-ring{width:68px;height:68px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#2a2400,#1a1600);border:1.5px solid #4a3a00;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 0 24px rgba(245,197,24,.15)}
+.exit-home-ring svg{width:30px;height:30px}
+.exit-card-title{font-family:'DM Serif Display',serif;font-size:clamp(20px,5vw,26px);color:#e8e8f5;letter-spacing:-.4px;margin-bottom:8px}
+.exit-card-sub{font-size:13px;color:#5a5a8a;line-height:1.65;margin-bottom:26px}
+.exit-card-btns{display:flex;flex-direction:column;gap:10px}
+.exit-go-home-btn{background:#F5C518;color:#0a0a14;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:15px 24px;border-radius:12px;min-height:52px;cursor:pointer;transition:background .15s,transform .12s;box-shadow:0 4px 20px rgba(245,197,24,.3)}
+.exit-go-home-btn:hover{background:#ffe066;transform:translateY(-1px)}
+.exit-go-home-btn:active{transform:scale(.97)}
+.exit-keep-btn{background:transparent;color:#6060a0;border:1px solid #252545;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;letter-spacing:.4px;padding:14px 24px;border-radius:12px;min-height:52px;cursor:pointer;transition:background .15s,border-color .15s,color .15s,transform .12s}
+.exit-keep-btn:hover{background:#1a1a2e;border-color:#2e2e50;color:#e8e8f5;transform:translateY(-1px)}
+.exit-keep-btn:active{transform:scale(.97)}
+@keyframes exitCardIn{from{opacity:0;transform:scale(.82) translateY(24px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes exitCardOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.88) translateY(10px)}}
+@keyframes exitBgOut{from{opacity:1}to{opacity:0}}
 </style>
 </head>
 <body>
@@ -210,12 +239,7 @@ to{opacity:1;transform:scale(1) translateY(0)}}
 <div id="game">
   <header>
     <div class="logo">
-      <button class="nexoku-home-btn" id="nexoku-home-icon" title="Back to Nexoku Home" aria-label="Back to Nexoku Home">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/>
-        <path d="M9 21V12h6v9"/>
-      </svg>
-    </button>
+      <button class="nexoku-home-btn" id="nexoku-home-icon" title="Back to Nexoku Home" aria-label="Back to Nexoku Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
       <div><div class="logo-title">Spelling</div><div class="logo-sub">Daily · Find All Words</div></div>
     </div>
     <button id="found-btn">0 found</button>
@@ -257,7 +281,6 @@ function isPangram(w){return PUZZLE.pangrams.includes(w.toUpperCase())}
 function showGame(){document.getElementById('landing').style.display='none';document.getElementById('game').classList.add('active');gameActive=true;buildHive();renderInput();renderScore();renderFound()}
 function showLanding(){document.getElementById('landing').style.display='flex';document.getElementById('game').classList.remove('active');gameActive=false}
 document.getElementById('play-btn').addEventListener('click',showGame);
-document.getElementById('back-btn').addEventListener('click',showLanding);
 const R=34,DX=R*Math.sqrt(3),DY=R*1.5,CX=120,CY=116;
 const HEX_POS=[[CX,CY-DY*2],[CX+DX,CY-DY],[CX+DX,CY+DY],[CX,CY+DY*2],[CX-DX,CY+DY],[CX-DX,CY-DY],[CX,CY]];
 const pts=Array.from({length:6},(_,i)=>{const a=Math.PI/180*(60*i-30);return `${(R*Math.cos(a)).toFixed(2)},${(R*Math.sin(a)).toFixed(2)}`}).join(' ');
@@ -311,16 +334,8 @@ document.addEventListener('keydown',e=>{if(!gameActive)return;if(e.key==='Enter'
 
 </script>
 
-<div class="exit-sub">Your progress will be lost.<br>Head back to the Nexoku home page?</div>
-    <div class="exit-btns">
-      <button class="exit-btn-home" id="exit-confirm">Go to Nexoku Home</button>
-      <button class="exit-btn-stay" id="exit-cancel">Keep Playing</button>
-    </div>
-  </div>
-</div>
-</div></div><!-- Nexoku Exit Popup -->
-<div id="exit-overlay" role="dialog" aria-modal="true" aria-label="Leave game?">
-  <div class="exit-backdrop-anim"></div>
+<!-- Nexoku Exit Popup -->
+<div id="exit-overlay" role="dialog" aria-modal="true">
   <div class="exit-card">
     <div class="exit-home-ring">
       <svg viewBox="0 0 24 24" fill="none" stroke="#F5C518" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -344,30 +359,30 @@ document.addEventListener('keydown',e=>{if(!gameActive)return;if(e.key==='Enter'
 
   function openExit(e) {
     if (e) { e.preventDefault(); e.stopPropagation(); }
-    overlay.classList.remove('hide');
-    overlay.classList.add('show');
-    document.body.style.overflow = 'hidden';
+    if (typeof gameActive !== 'undefined' && gameActive) {
+      overlay.classList.remove('hide');
+      overlay.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    } else {
+      window.location.href = 'https://maheshmishra271090-design.github.io/Nexoku/';
+    }
   }
 
   function closeExit() {
     overlay.classList.add('hide');
     overlay.classList.remove('show');
     document.body.style.overflow = '';
-    setTimeout(function() { overlay.classList.remove('hide'); }, 280);
+    setTimeout(function() { overlay.classList.remove('hide'); }, 250);
   }
 
   homeBtn.addEventListener('click', openExit);
-
   document.getElementById('exit-go-home').addEventListener('click', function() {
     window.location.href = 'https://maheshmishra271090-design.github.io/Nexoku/';
   });
-
   document.getElementById('exit-keep-playing').addEventListener('click', closeExit);
-
   overlay.addEventListener('click', function(e) {
-    if (e.target === overlay || e.target.classList.contains('exit-backdrop-anim')) closeExit();
+    if (e.target === overlay) closeExit();
   });
-
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && overlay.classList.contains('show')) closeExit();
   });

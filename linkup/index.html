@@ -127,6 +127,27 @@ header{width:100%;max-width:460px;display:flex;justify-content:space-between;ali
   .game-body{gap:clamp(8px,2vw,10px);padding:10px 16px}
   @media(max-height:700px){.rule{min-width:80px;padding:10px 8px}.rules{gap:8px}}
 
+
+to{opacity:1;transform:scale(1) translateY(0)}}
+
+to{opacity:1;transform:scale(1) translateY(0)}}
+
+
+/* ── Exit Popup ── */
+#exit-overlay{position:fixed;inset:0;background:rgba(10,10,20,.88);display:none;align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:20px}
+#exit-overlay.show{display:flex;animation:exitFadeIn .25s ease}
+.exit-card{background:#131320;border:1px solid #1e1e38;border-radius:20px;padding:clamp(24px,6vw,36px);max-width:340px;width:100%;text-align:center;position:relative;box-shadow:0 24px 80px rgba(0,0,0,.7);animation:exitCardIn .3s cubic-bezier(.34,1.56,.64,1) both}
+.exit-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#F5C518,#ffe066,transparent);border-radius:20px 20px 0 0}
+.exit-icon-lrg{font-size:42px;margin-bottom:14px;display:block;filter:drop-shadow(0 0 12px rgba(245,197,24,.3))}
+.exit-title{font-family:'DM Serif Display',serif;font-size:clamp(22px,5vw,28px);color:#e8e8f5;margin-bottom:8px;letter-spacing:-.5px}
+.exit-sub{font-size:13px;color:#6060a0;line-height:1.6;margin-bottom:24px}
+.exit-btns{display:flex;flex-direction:column;gap:10px}
+.exit-btn-home{background:#F5C518;color:#0a0a14;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:14px 24px;border-radius:10px;min-height:50px;cursor:pointer;transition:background .15s,transform .1s;box-shadow:0 4px 20px rgba(245,197,24,.25)}
+.exit-btn-home:hover{background:#ffe066;transform:scale(1.02)}
+.exit-btn-stay{background:transparent;color:#6060a0;border:1px solid #1e1e38;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;letter-spacing:.5px;padding:13px 24px;border-radius:10px;min-height:50px;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+.exit-btn-stay:hover{background:#1a1a2e;border-color:#28284a;color:#e8e8f5}
+@keyframes exitFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes exitCardIn{from{opacity:0;transform:scale(.88) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
 </style>
 </head>
 <body>
@@ -375,6 +396,52 @@ document.getElementById('btn-deselect').addEventListener('click', () => {
   selected.clear(); renderGrid(); updateHint();
 });
 document.getElementById('btn-submit').addEventListener('click', submitGuess);
+
+
+
+</script>
+
+<div class="exit-sub">Your progress will be lost.<br>Head back to the Nexoku home page?</div>
+    <div class="exit-btns">
+      <button class="exit-btn-home" id="exit-confirm">Go to Nexoku Home</button>
+      <button class="exit-btn-stay" id="exit-cancel">Keep Playing</button>
+    </div>
+  </div>
+</div>
+</div><!-- Exit Popup -->
+<div id="exit-overlay">
+  <div class="exit-card">
+    <span class="exit-icon-lrg">🏠</span>
+    <div class="exit-title">Leave the game?</div>
+    <div class="exit-sub">Your progress will be lost.<br>Head back to the Nexoku home page?</div>
+    <div class="exit-btns">
+      <button class="exit-btn-home" id="exit-go-home">Go to Nexoku Home</button>
+      <button class="exit-btn-stay" id="exit-keep-playing">Keep Playing</button>
+    </div>
+  </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var overlay = document.getElementById('exit-overlay');
+  if (!overlay) return;
+  function showExit(e) { if(e){ e.preventDefault(); e.stopPropagation(); } overlay.classList.add('show'); }
+  ['back-btn', 'res-home'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('click', showExit);
+  });
+  document.getElementById('exit-go-home').addEventListener('click', function() {
+    window.location.href = 'https://maheshmishra271090-design.github.io/Nexoku/';
+  });
+  document.getElementById('exit-keep-playing').addEventListener('click', function() {
+    overlay.classList.remove('show');
+  });
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) overlay.classList.remove('show');
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && overlay.classList.contains('show')) overlay.classList.remove('show');
+  });
+});
 </script>
 </body>
 </html>

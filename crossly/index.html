@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Crossly</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f1a;--surface:#131320;--surface2:#1a1a2a;--border:#1e1e30;--gold:#F5C518;--text:#ddddf0;--text-muted:#55556a;--text-dim:#2a2a3e;--error:#c0392b;--good:#52c98a;--good-bg:#1a3a2a}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;flex-direction:column;align-items:center}
+
+/* LANDING */
+#landing{width:100%;height:100vh;height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:24px}
+.land-bg{position:absolute;inset:0;pointer-events:none;opacity:.04}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;z-index:1;animation:fadeUp .6s ease both}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);opacity:.8;margin-bottom:14px}
+.land-title{font-family:'DM Serif Display',serif;font-size:clamp(56px,12vw,96px);color:var(--text);line-height:.9;letter-spacing:-2px;margin-bottom:8px}
+.land-title em{color:var(--gold);font-style:normal}
+.land-sub{font-size:13px;color:var(--text-muted);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:30px;font-weight:500}
+.cross-preview{display:grid;grid-template-columns:repeat(5,38px);gap:3px;margin-bottom:30px}
+.cp{width:38px;height:38px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:15px;font-weight:700}
+.cp.letter{background:var(--surface2);border:1.5px solid var(--border);color:var(--text)}
+.cp.gold{background:#2a2400;border:1.5px solid var(--gold);color:var(--gold)}
+.cp.black{background:#080810;border:1.5px solid #0a0a18}
+.play-btn{background:var(--gold);color:var(--bg);border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:14px 52px;border-radius:50px;transition:transform .2s,box-shadow .2s,background .15s;box-shadow:0 0 28px rgba(245,197,24,.2),0 4px 16px rgba(0,0,0,.4)}
+.play-btn:hover{background:#ffdb1a;transform:scale(1.05) translateY(-2px)}
+.play-btn:active{transform:scale(.97)}
+.rules{display:flex;gap:10px;margin-top:28px;animation:fadeUp .6s .15s ease both}
+.rule{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-align:center;min-width:100px}
+.rule-icon{font-size:18px;display:block;margin-bottom:6px}
+.rule-txt{font-size:11px;color:var(--text-muted);line-height:1.4}
+.rule-txt strong{color:var(--text);display:block;font-size:12px;margin-bottom:2px}
+
+/* GAME */
+#game{display:none;width:100%;height:100vh;height:100dvh;flex-direction:column;align-items:center;overflow:hidden;animation:fadeUp .35s ease}
+#game.active{display:flex}
+header{width:100%;max-width:520px;display:flex;justify-content:space-between;align-items:center;padding:14px 20px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.hdr-l{display:flex;align-items:center;gap:6px}
+.back-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:2px 8px 2px 0;transition:color .15s}
+.back-btn:hover{color:var(--gold)}
+.hdr-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--gold)}
+.hdr-sub{font-size:10px;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:1px}
+#progress-txt{font-size:12px;color:var(--text-muted);font-weight:600}
+
+.game-body{flex:1;display:flex;gap:12px;padding:10px 14px;width:100%;max-width:520px;overflow:hidden;flex-wrap:wrap;align-content:flex-start}
+
+/* Grid */
+#cross-grid{display:grid;gap:3px;flex-shrink:0;align-self:start}
+.cross-cell{width:34px;height:34px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:15px;font-weight:700;position:relative;cursor:pointer;transition:all .15s}
+.cross-cell.black{background:#080810;border:1.5px solid #0a0a18;cursor:default;pointer-events:none}
+.cross-cell.empty{background:var(--surface2);border:1.5px solid var(--border);color:var(--text)}
+.cross-cell.active{background:#1e1e10;border-color:var(--gold);color:var(--gold)}
+.cross-cell.word-active{background:#181814;border-color:#666620;color:var(--text)}
+.cross-cell.correct{background:var(--good-bg);border-color:var(--good);color:var(--good)}
+.cross-cell.error-flash{animation:errFlash .4s ease}
+.cell-num{position:absolute;top:2px;left:3px;font-size:7px;font-weight:700;color:var(--text-muted);font-family:'DM Sans',sans-serif;line-height:1}
+
+/* Clues panel */
+.clues-panel{flex:1;display:flex;flex-direction:column;gap:8px;overflow-y:auto;min-width:0}
+.clue-section-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:2px}
+.clue-item{padding:8px 10px;border-radius:7px;border:1px solid var(--border);background:var(--surface);cursor:pointer;transition:all .15s}
+.clue-item:hover{background:var(--surface2)}
+.clue-item.active{background:#1e1e10;border-color:var(--gold)}
+.clue-item.done{background:var(--good-bg);border-color:var(--good);opacity:.7}
+.clue-num{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.5px;margin-bottom:2px}
+.clue-txt{font-size:11px;color:var(--text-muted);line-height:1.4}
+.clue-item.active .clue-txt{color:var(--text)}
+
+/* Result overlay */
+#result-overlay{position:fixed;inset:0;background:rgba(15,15,26,.92);display:none;align-items:center;justify-content:center;z-index:200}
+#result-overlay.show{display:flex;animation:fadeIn .3s ease}
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 40px;text-align:center;max-width:320px}
+.result-icon{font-size:44px;margin-bottom:14px}
+.result-title{font-family:'DM Serif Display',serif;font-size:28px;color:var(--gold);margin-bottom:8px}
+.result-sub{font-size:13px;color:var(--text-muted);margin-bottom:24px}
+.result-btns{display:flex;gap:10px;justify-content:center}
+.res-btn{padding:10px 22px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;transition:background .15s,transform .1s;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted)}
+.res-btn.gold{background:var(--gold);color:var(--bg);border-color:transparent}
+.res-btn:hover{transform:scale(1.04)}
+.res-btn.gold:hover{background:#e8c400}
+
+#toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);padding:7px 18px;border-radius:8px;font-size:12px;font-weight:700;white-space:nowrap;pointer-events:none;opacity:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+#toast.show{animation:toastAnim 2s ease forwards}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes toastAnim{0%{opacity:0;transform:translate(-50%,-8px)}10%{opacity:1;transform:translate(-50%,0)}80%{opacity:1}100%{opacity:0}}
+@keyframes errFlash{0%,100%{background:var(--surface2)}50%{background:#3a1010;border-color:var(--error)}}
+
+  /* ── Mobile ── */
+  html{-webkit-text-size-adjust:100%}
+  body{-webkit-tap-highlight-color:transparent;padding-bottom:env(safe-area-inset-bottom)}
+  button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  #landing{padding:20px 16px calc(20px + env(safe-area-inset-bottom));height:100dvh}
+  #game{height:100dvh;padding-bottom:env(safe-area-inset-bottom)}
+  header{padding-top:max(14px,env(safe-area-inset-top))}
+  .back-btn,.hdr-back{min-width:44px;min-height:44px;display:flex;align-items:center}
+  .play-btn{min-height:52px;touch-action:manipulation;font-size:clamp(12px,3.5vw,14px)}
+  .land-title{font-size:clamp(44px,13vw,90px)}
+  .land-sub{font-size:clamp(10px,3vw,13px)}
+  .eyebrow{font-size:clamp(9px,2.5vw,11px)}
+  @media(max-width:380px){.rules{flex-wrap:nowrap;gap:6px}.rule{min-width:80px;padding:10px 8px}}
+  @media(max-height:680px){.landing-rules{display:none}.hex-preview,.grid-preview,.word-preview,.scramble-preview,.def-preview,.preview-grid{transform:scale(.85);transform-origin:center top}}
+
+  @media(max-width:420px){.cross-cell{width:28px;height:28px;font-size:12px}#cross-grid{gap:2px}.cell-num{font-size:6px}}
+  .cross-cell{touch-action:manipulation;min-width:28px;min-height:28px}
+  .game-body{flex-direction:column;gap:10px;padding:10px 14px;overflow:hidden}
+  .clues-panel{max-height:calc(100dvh - 300px)}
+  .clue-item{min-height:44px;display:flex;flex-direction:column;justify-content:center}
+
+</style>
+</head>
+<body>
+
+<section id="landing">
+  <svg class="land-bg" style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 400 600" preserveAspectRatio="xMidYMid slice">
+    <defs><pattern id="cp" x="0" y="0" width="42" height="42" patternUnits="userSpaceOnUse"><rect x="1" y="1" width="40" height="40" rx="4" fill="none" stroke="#F5C518" stroke-width="1"/></pattern></defs>
+    <rect width="100%" height="100%" fill="url(#cp)"/>
+  </svg>
+  <div class="hero">
+    <div class="eyebrow">Crossword · Daily</div>
+    <div class="land-title">Cross<em>ly</em></div>
+    <div class="land-sub">Mini crossword · 5 × 5</div>
+    <div class="cross-preview">
+      <div class="cp gold">C</div><div class="cp letter">R</div><div class="cp letter">A</div><div class="cp letter">N</div><div class="cp letter">E</div>
+      <div class="cp letter">O</div><div class="cp black"></div><div class="cp letter">R</div><div class="cp black"></div><div class="cp letter">V</div>
+      <div class="cp gold">I</div><div class="cp letter">G</div><div class="cp gold">L</div><div class="cp letter">O</div><div class="cp gold">O</div>
+      <div class="cp letter">L</div><div class="cp black"></div><div class="cp letter">T</div><div class="cp black"></div><div class="cp letter">K</div>
+      <div class="cp letter">S</div><div class="cp letter">R</div><div class="cp letter">A</div><div class="cp letter">S</div><div class="cp letter">E</div>
+    </div>
+    <button class="play-btn" id="play-btn">Play Now</button>
+  </div>
+  <div class="rules">
+    <div class="rule"><span class="rule-icon">✏️</span><div class="rule-txt"><strong>Fill the grid</strong>Type letters into each cell</div></div>
+    <div class="rule"><span class="rule-icon">↔️</span><div class="rule-txt"><strong>Across & down</strong>Words go in both directions</div></div>
+    <div class="rule"><span class="rule-icon">💡</span><div class="rule-txt"><strong>Use clues</strong>Click a clue to highlight the word</div></div>
+  </div>
+</section>
+
+<div id="game">
+  <header>
+    <div class="hdr-l">
+      <button class="back-btn" id="back-btn">←</button>
+      <div><div class="hdr-title">Crossly</div><div class="hdr-sub">Mini Crossword · 5×5</div></div>
+    </div>
+    <span id="progress-txt">0 / 0</span>
+  </header>
+  <div class="game-body">
+    <div id="cross-grid"></div>
+    <div class="clues-panel" id="clues-panel"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="result-overlay">
+  <div class="result-card">
+    <div class="result-icon">🏆</div>
+    <div class="result-title">Solved!</div>
+    <div class="result-sub">You completed today's Crossly</div>
+    <div class="result-btns">
+      <button class="res-btn" id="res-home">Home</button>
+      <button class="res-btn gold" id="res-play">New Puzzle</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Each puzzle: grid layout (. = black, letter = answer), across clues, down clues
+const PUZZLES = [
+  {
+    // 5x5 grid
+    answer: [
+      'CRANE',
+      'O.R.E',
+      'IGLOO',
+      'L.T.K',
+      'SRASH'
+    ],
+    across: [
+      {num:1, clue:'A large wading bird', row:0, col:0, len:5},
+      {num:5, clue:'Dome-shaped snow dwelling', row:2, col:0, len:5},
+      {num:7, clue:'Wound caused by scraping', row:4, col:0, len:5},
+    ],
+    down: [
+      {num:1, clue:'Coiled spring of wire', row:0, col:0, len:5},
+      {num:2, clue:'Altar area in a church', row:0, col:2, len:5},
+      {num:3, clue:'A sharp beak', row:0, col:4, len:5},
+    ]
+  },
+  {
+    answer: [
+      'BRAKE',
+      'R.I.L',
+      'AISLE',
+      'V.E.P',
+      'ELEGY'
+    ],
+    across: [
+      {num:1, clue:'Device to slow a vehicle', row:0, col:0, len:5},
+      {num:5, clue:'Corridor between rows', row:2, col:0, len:5},
+      {num:7, clue:'Mournful poem or song', row:4, col:0, len:5},
+    ],
+    down: [
+      {num:1, clue:'Edge or margin', row:0, col:0, len:5},
+      {num:2, clue:'Sheet of frozen water', row:0, col:2, len:5},
+      {num:3, clue:'Thin flat layer', row:0, col:4, len:5},
+    ]
+  },
+  {
+    answer: [
+      'STAVE',
+      'T.O.L',
+      'ALBUM',
+      'R.E.E',
+      'DENSE'
+    ],
+    across: [
+      {num:1, clue:'Stick of wood; ward off', row:0, col:0, len:5},
+      {num:5, clue:'A music or photo collection', row:2, col:0, len:5},
+      {num:7, clue:'Thick and closely packed', row:4, col:0, len:5},
+    ],
+    down: [
+      {num:1, clue:'Star-shaped shape', row:0, col:0, len:5},
+      {num:2, clue:'Cavity or burrow', row:0, col:2, len:5},
+      {num:3, clue:'Tiny ___; faint beam', row:0, col:4, len:5},
+    ]
+  }
+];
+
+const SIZE = 5;
+let puzzle = null;
+let userGrid = [];
+let activeClue = null;
+let solvedClues = new Set();
+let gameActive = false;
+
+function loadPuzzle() {
+  puzzle = PUZZLES[Math.floor(Math.random() * PUZZLES.length)];
+  userGrid = Array.from({length:SIZE}, () => Array(SIZE).fill(''));
+  solvedClues = new Set();
+  activeClue = null;
+  renderGrid();
+  renderClues();
+  updateProgress();
+}
+
+function isBlack(r, c) {
+  return puzzle.answer[r][c] === '.';
+}
+
+function getClueNum(r, c) {
+  // find if any clue starts here
+  const all = [...puzzle.across, ...puzzle.down];
+  const found = all.find(cl => cl.row === r && cl.col === c);
+  return found ? found.num : null;
+}
+
+function renderGrid() {
+  const el = document.getElementById('cross-grid');
+  el.style.gridTemplateColumns = `repeat(${SIZE},34px)`;
+  el.innerHTML = '';
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      const cell = document.createElement('div');
+      if (isBlack(r, c)) {
+        cell.className = 'cross-cell black';
+      } else {
+        cell.className = 'cross-cell empty';
+        cell.dataset.r = r; cell.dataset.c = c;
+        cell.textContent = userGrid[r][c];
+        const num = getClueNum(r, c);
+        if (num) {
+          const n = document.createElement('span');
+          n.className = 'cell-num'; n.textContent = num;
+          cell.appendChild(n);
+        }
+        cell.addEventListener('click', () => cellClick(r, c));
+      }
+      el.appendChild(cell);
+    }
+  }
+}
+
+function cellClick(r, c) {
+  // Find a clue that contains this cell
+  const all = [...puzzle.across, ...puzzle.down];
+  const containing = all.filter(cl => {
+    if (cl.row === r && cl.col <= c && c < cl.col + cl.len && puzzle.answer[r].slice(cl.col, cl.col + cl.len).indexOf('.') === -1) return true;
+    if (cl.col === c && cl.row <= r && r < cl.row + cl.len) return true;
+    return false;
+  });
+  if (containing.length === 0) return;
+  // cycle between across/down if multiple
+  if (activeClue && containing.includes(activeClue)) {
+    const idx = containing.indexOf(activeClue);
+    activeClue = containing[(idx + 1) % containing.length];
+  } else {
+    activeClue = containing[0];
+  }
+  highlightClue();
+}
+
+function highlightClue() {
+  // reset all
+  document.querySelectorAll('.cross-cell:not(.black)').forEach(el => {
+    const r = +el.dataset.r, c = +el.dataset.c;
+    if (isCellSolved(r, c)) el.className = 'cross-cell correct';
+    else el.className = 'cross-cell empty';
+    const num = getClueNum(r, c);
+    if (num) { const n = document.createElement('span'); n.className='cell-num'; n.textContent=num; el.appendChild(n); }
+  });
+  if (!activeClue) return;
+  // highlight word
+  for (let i = 0; i < activeClue.len; i++) {
+    const r = activeClue.row + (activeClue.col === activeClue.col ? (puzzle.down.includes(activeClue) ? i : 0) : 0);
+    const c = activeClue.col + (puzzle.across.includes(activeClue) ? i : 0);
+    const rr = puzzle.across.includes(activeClue) ? activeClue.row : activeClue.row + i;
+    const cc = puzzle.across.includes(activeClue) ? activeClue.col + i : activeClue.col;
+    const el = document.querySelector(`[data-r="${rr}"][data-c="${cc}"]`);
+    if (el) { if (!isCellSolved(rr, cc)) el.className = 'cross-cell word-active'; }
+  }
+  // active clue styling
+  document.querySelectorAll('.clue-item').forEach(el => el.classList.remove('active'));
+  const clueEl = document.getElementById(`clue-${activeClue.num}-${puzzle.across.includes(activeClue)?'a':'d'}`);
+  if (clueEl) { clueEl.classList.add('active'); clueEl.scrollIntoView({block:'nearest'}); }
+}
+
+function isCellSolved(r, c) {
+  return userGrid[r][c] === puzzle.answer[r][c];
+}
+
+function handleKey(key) {
+  if (!activeClue) return;
+  const isAcross = puzzle.across.includes(activeClue);
+  // find current cursor position in active clue
+  let cursor = 0;
+  for (let i = 0; i < activeClue.len; i++) {
+    const rr = isAcross ? activeClue.row : activeClue.row + i;
+    const cc = isAcross ? activeClue.col + i : activeClue.col;
+    if (!userGrid[rr][cc]) { cursor = i; break; }
+    cursor = i;
+  }
+  if (key === 'Backspace') {
+    // delete last filled
+    for (let i = activeClue.len - 1; i >= 0; i--) {
+      const rr = isAcross ? activeClue.row : activeClue.row + i;
+      const cc = isAcross ? activeClue.col + i : activeClue.col;
+      if (userGrid[rr][cc]) { userGrid[rr][cc] = ''; updateCell(rr, cc); break; }
+    }
+  } else if (/^[A-Z]$/.test(key)) {
+    // fill next empty
+    for (let i = 0; i < activeClue.len; i++) {
+      const rr = isAcross ? activeClue.row : activeClue.row + i;
+      const cc = isAcross ? activeClue.col + i : activeClue.col;
+      if (!userGrid[rr][cc]) {
+        userGrid[rr][cc] = key;
+        updateCell(rr, cc);
+        checkClue(activeClue);
+        checkAll();
+        break;
+      }
+    }
+  }
+}
+
+function updateCell(r, c) {
+  const el = document.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+  if (!el) return;
+  // keep number
+  const num = getClueNum(r, c);
+  el.innerHTML = '';
+  if (num) { const n = document.createElement('span'); n.className='cell-num'; n.textContent=num; el.appendChild(n); }
+  el.insertAdjacentText('beforeend', userGrid[r][c]);
+  if (isCellSolved(r, c)) el.classList.add('correct');
+  else if (userGrid[r][c] && !isCellSolved(r, c)) el.classList.add('error-flash');
+  updateProgress();
+}
+
+function checkClue(cl) {
+  const isAcross = puzzle.across.includes(cl);
+  let word = '';
+  for (let i = 0; i < cl.len; i++) {
+    const rr = isAcross ? cl.row : cl.row + i;
+    const cc = isAcross ? cl.col + i : cl.col;
+    word += userGrid[rr][cc] || '';
+  }
+  const answer = isAcross
+    ? puzzle.answer[cl.row].slice(cl.col, cl.col + cl.len)
+    : Array.from({length:cl.len}, (_,i) => puzzle.answer[cl.row+i][cl.col]).join('');
+  if (word === answer) {
+    solvedClues.add(cl.num + (isAcross ? 'a' : 'd'));
+    const el = document.getElementById(`clue-${cl.num}-${isAcross?'a':'d'}`);
+    if (el) el.classList.add('done');
+    showToast('✓ Word solved!', 'good');
+  }
+}
+
+function checkAll() {
+  const total = puzzle.across.length + puzzle.down.length;
+  if (solvedClues.size >= total) {
+    setTimeout(() => document.getElementById('result-overlay').classList.add('show'), 600);
+  }
+}
+
+function updateProgress() {
+  const total = puzzle.across.length + puzzle.down.length;
+  document.getElementById('progress-txt').textContent = `${solvedClues.size} / ${total}`;
+}
+
+function renderClues() {
+  const panel = document.getElementById('clues-panel');
+  panel.innerHTML = '';
+  const acrossTitle = document.createElement('div');
+  acrossTitle.className = 'clue-section-title'; acrossTitle.textContent = 'Across';
+  panel.appendChild(acrossTitle);
+  puzzle.across.forEach(cl => {
+    const item = clueEl(cl, 'a');
+    panel.appendChild(item);
+  });
+  const downTitle = document.createElement('div');
+  downTitle.className = 'clue-section-title'; downTitle.style.marginTop = '10px'; downTitle.textContent = 'Down';
+  panel.appendChild(downTitle);
+  puzzle.down.forEach(cl => {
+    const item = clueEl(cl, 'd');
+    panel.appendChild(item);
+  });
+}
+
+function clueEl(cl, dir) {
+  const item = document.createElement('div');
+  item.className = 'clue-item';
+  item.id = `clue-${cl.num}-${dir}`;
+  item.innerHTML = `<div class="clue-num">${cl.num} ${dir === 'a' ? 'Across' : 'Down'}</div><div class="clue-txt">${cl.clue}</div>`;
+  item.addEventListener('click', () => {
+    activeClue = cl;
+    highlightClue();
+  });
+  return item;
+}
+
+let toastT;
+function showToast(msg, type='info') {
+  const el = document.getElementById('toast');
+  const bg = {error:'#c0392b',warn:'#d35400',good:'#1a3a2a',info:'#1e1e30'};
+  const fg = {error:'#fff',warn:'#fff',good:'#52c98a',info:'#c0c0d8'};
+  el.textContent = msg; el.style.background = bg[type]; el.style.color = fg[type];
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+document.getElementById('play-btn').addEventListener('click', () => {
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('game').classList.add('active');
+  gameActive = true; loadPuzzle();
+});
+document.getElementById('back-btn').addEventListener('click', () => {
+  document.getElementById('landing').style.display = 'flex';
+  document.getElementById('game').classList.remove('active');
+  document.getElementById('result-overlay').classList.remove('show');
+  gameActive = false;
+});
+document.getElementById('res-home').addEventListener('click', () => {
+  document.getElementById('result-overlay').classList.remove('show');
+  document.getElementById('landing').style.display = 'flex';
+  document.getElementById('game').classList.remove('active');
+  gameActive = false;
+});
+document.getElementById('res-play').addEventListener('click', () => {
+  document.getElementById('result-overlay').classList.remove('show');
+  loadPuzzle();
+});
+
+document.addEventListener('keydown', e => {
+  if (!gameActive) return;
+  if (e.key === 'Backspace') { e.preventDefault(); handleKey('Backspace'); }
+  else if (/^[a-zA-Z]$/.test(e.key)) handleKey(e.key.toUpperCase());
+});
+</script>
+</body>
+</html>

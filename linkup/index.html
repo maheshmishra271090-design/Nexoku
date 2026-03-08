@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Linkup</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f1a;--surface:#131320;--surface2:#1a1a2a;--border:#1e1e30;--gold:#F5C518;--text:#ddddf0;--text-muted:#55556a;--text-dim:#2a2a3e}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;flex-direction:column;align-items:center}
+
+/* LANDING */
+#landing{width:100%;height:100vh;height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:24px}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;z-index:1;animation:fadeUp .6s ease both}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);opacity:.8;margin-bottom:14px}
+.land-title{font-family:'DM Serif Display',serif;font-size:clamp(56px,12vw,96px);color:var(--text);line-height:.9;letter-spacing:-2px;margin-bottom:8px}
+.land-title em{color:var(--gold);font-style:normal}
+.land-sub{font-size:13px;color:var(--text-muted);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:30px;font-weight:500}
+.preview-grid{display:grid;grid-template-columns:repeat(4,72px);gap:5px;margin-bottom:30px}
+.pv-card{height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;letter-spacing:.3px;text-align:center;padding:0 6px}
+.pv-c1{background:#2a1f00;border:1.5px solid #8B6914;color:#F5C518}
+.pv-c2{background:#0d2e1a;border:1.5px solid #2d6a4f;color:#52c98a}
+.pv-c3{background:#1a0a2e;border:1.5px solid #553399;color:#a78bfa}
+.pv-c4{background:#1a1020;border:1.5px solid #7c3e6e;color:#f0abdb}
+.play-btn{background:var(--gold);color:var(--bg);border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:14px 52px;border-radius:50px;transition:transform .2s,box-shadow .2s,background .15s;box-shadow:0 0 28px rgba(245,197,24,.2),0 4px 16px rgba(0,0,0,.4)}
+.play-btn:hover{background:#ffdb1a;transform:scale(1.05) translateY(-2px)}
+.play-btn:active{transform:scale(.97)}
+.rules{display:flex;gap:10px;margin-top:28px;animation:fadeUp .6s .15s ease both}
+.rule{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-align:center;min-width:100px}
+.rule-icon{font-size:18px;display:block;margin-bottom:6px}
+.rule-txt{font-size:11px;color:var(--text-muted);line-height:1.4}
+.rule-txt strong{color:var(--text);display:block;font-size:12px;margin-bottom:2px}
+
+/* GAME */
+#game{display:none;width:100%;height:100vh;height:100dvh;flex-direction:column;align-items:center;overflow:hidden;animation:fadeUp .35s ease}
+#game.active{display:flex}
+header{width:100%;max-width:460px;display:flex;justify-content:space-between;align-items:center;padding:14px 20px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.hdr-l{display:flex;align-items:center;gap:6px}
+.back-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:2px 8px 2px 0;transition:color .15s}
+.back-btn:hover{color:var(--gold)}
+.hdr-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--gold)}
+.hdr-sub{font-size:10px;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:1px}
+.mistakes-wrap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted)}
+.mistake-dot{width:10px;height:10px;border-radius:50%;background:var(--surface2);border:1.5px solid var(--border);transition:all .3s}
+.mistake-dot.used{background:#c0392b;border-color:#c0392b}
+
+.game-body{flex:1;display:flex;flex-direction:column;align-items:center;padding:12px 20px;width:100%;max-width:460px;gap:10px;overflow:hidden}
+
+/* solved rows */
+.solved-rows{width:100%;display:flex;flex-direction:column;gap:5px;flex-shrink:0}
+.solved-row{width:100%;padding:10px 14px;border-radius:8px;animation:popIn .35s ease}
+.solved-row-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;opacity:.7}
+.solved-row-words{font-size:12px;font-weight:600;letter-spacing:.3px}
+
+/* word grid */
+#word-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(4px,1.5vw,6px);width:100%}
+.word-card{
+  padding:0 6px;height:clamp(46px,12vw,54px);border-radius:9px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;letter-spacing:.3px;text-align:center;
+  background:var(--surface2);border:1.5px solid var(--border);color:var(--text);
+  transition:all .15s;user-select:none;
+}
+.word-card:hover{background:#252535;border-color:#44445a}
+.word-card.selected{background:#2a2410;border-color:var(--gold);color:var(--gold)}
+.word-card.shake{animation:shake .4s ease}
+.word-card.pop{animation:cardPop .35s ease}
+
+.hint-txt{font-size:11px;color:var(--text-dim);text-align:center;min-height:16px}
+
+.btn-row{display:flex;gap:10px;flex-shrink:0}
+.btn{padding:9px 20px;border-radius:7px;font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .13s,transform .1s;border:1px solid #252538;background:var(--surface);color:var(--text-muted)}
+.btn:hover{background:var(--surface2);transform:scale(1.04)}
+.btn:active{transform:scale(.96)}
+.btn.gold{background:var(--gold);color:var(--bg);border-color:transparent}
+.btn.gold:hover{background:#e8c400}
+
+/* color themes per category level */
+.cat-0{background:#2a1f00;border-color:#8B6914;color:#F5C518}
+.cat-1{background:#0d2e1a;border-color:#2d6a4f;color:#52c98a}
+.cat-2{background:#1a0a2e;border-color:#553399;color:#a78bfa}
+.cat-3{background:#1a1020;border-color:#7c3e6e;color:#f0abdb}
+
+/* Result overlay */
+#result-overlay{position:fixed;inset:0;background:rgba(15,15,26,.92);display:none;align-items:center;justify-content:center;z-index:200}
+#result-overlay.show{display:flex;animation:fadeIn .3s ease}
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 40px;text-align:center;max-width:340px;width:100%}
+.result-icon{font-size:44px;margin-bottom:14px}
+.result-title{font-family:'DM Serif Display',serif;font-size:28px;color:var(--gold);margin-bottom:8px}
+.result-sub{font-size:13px;color:var(--text-muted);margin-bottom:24px}
+.result-btns{display:flex;gap:10px;justify-content:center}
+.res-btn{padding:10px 22px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;transition:background .15s,transform .1s;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted)}
+.res-btn.gold{background:var(--gold);color:var(--bg);border-color:transparent}
+.res-btn:hover{transform:scale(1.04)}
+.res-btn.gold:hover{background:#e8c400}
+
+#toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);padding:7px 18px;border-radius:8px;font-size:12px;font-weight:700;white-space:nowrap;pointer-events:none;opacity:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+#toast.show{animation:toastAnim 2s ease forwards}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes toastAnim{0%{opacity:0;transform:translate(-50%,-8px)}10%{opacity:1;transform:translate(-50%,0)}80%{opacity:1}100%{opacity:0}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes cardPop{0%{transform:scale(1)}40%{transform:scale(1.1)}100%{transform:scale(1)}}
+@keyframes popIn{from{opacity:0;transform:scaleY(.8)}to{opacity:1;transform:scaleY(1)}}
+
+  /* ── Mobile ── */
+  html{-webkit-text-size-adjust:100%}
+  body{-webkit-tap-highlight-color:transparent;padding-bottom:env(safe-area-inset-bottom)}
+  button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  #landing{padding:20px 16px calc(20px + env(safe-area-inset-bottom));height:100dvh}
+  #game{height:100dvh;padding-bottom:env(safe-area-inset-bottom)}
+  header{padding-top:max(14px,env(safe-area-inset-top))}
+  .back-btn,.hdr-back{min-width:44px;min-height:44px;display:flex;align-items:center}
+  .play-btn{min-height:52px;touch-action:manipulation;font-size:clamp(12px,3.5vw,14px)}
+  .land-title{font-size:clamp(44px,13vw,90px)}
+  .land-sub{font-size:clamp(10px,3vw,13px)}
+  .eyebrow{font-size:clamp(9px,2.5vw,11px)}
+  @media(max-width:380px){.rules{flex-wrap:nowrap;gap:6px}.rule{min-width:80px;padding:10px 8px}}
+  @media(max-height:680px){.landing-rules{display:none}.hex-preview,.grid-preview,.word-preview,.scramble-preview,.def-preview,.preview-grid{transform:scale(.85);transform-origin:center top}}
+
+  @media(max-width:380px){.word-card{height:46px;font-size:11px}#word-grid{gap:5px}}
+  .word-card{min-height:44px;touch-action:manipulation}
+  .btn{min-height:44px;touch-action:manipulation}
+  .game-body{gap:clamp(8px,2vw,10px);padding:10px 16px}
+  @media(max-height:700px){.rule{min-width:80px;padding:10px 8px}.rules{gap:8px}}
+
+</style>
+</head>
+<body>
+
+<section id="landing">
+  <div class="hero">
+    <div class="eyebrow">Connections · Daily</div>
+    <div class="land-title">Link<em>up</em></div>
+    <div class="land-sub">Group words by what connects them</div>
+    <div class="preview-grid">
+      <div class="pv-card pv-c1">SOLAR</div>
+      <div class="pv-card pv-c2">MAPLE</div>
+      <div class="pv-card pv-c3">ECHO</div>
+      <div class="pv-card pv-c4">PEARL</div>
+      <div class="pv-card pv-c1">LUNAR</div>
+      <div class="pv-card pv-c2">OAK</div>
+      <div class="pv-card pv-c3">SIERRA</div>
+      <div class="pv-card pv-c4">JADE</div>
+      <div class="pv-card pv-c1">ORBIT</div>
+      <div class="pv-card pv-c2">BIRCH</div>
+      <div class="pv-card pv-c3">DELTA</div>
+      <div class="pv-card pv-c4">RUBY</div>
+      <div class="pv-card pv-c1">COMET</div>
+      <div class="pv-card pv-c2">CEDAR</div>
+      <div class="pv-card pv-c3">ROMEO</div>
+      <div class="pv-card pv-c4">CORAL</div>
+    </div>
+    <button class="play-btn" id="play-btn">Play Now</button>
+  </div>
+  <div class="rules">
+    <div class="rule"><span class="rule-icon">🔗</span><div class="rule-txt"><strong>Find groups</strong>Select 4 words with a common theme</div></div>
+    <div class="rule"><span class="rule-icon">🎯</span><div class="rule-txt"><strong>Submit</strong>Press submit when 4 are chosen</div></div>
+    <div class="rule"><span class="rule-icon">❤️</span><div class="rule-txt"><strong>4 mistakes</strong>Use them wisely!</div></div>
+  </div>
+</section>
+
+<div id="game">
+  <header>
+    <div class="hdr-l">
+      <button class="back-btn" id="back-btn">←</button>
+      <div><div class="hdr-title">Linkup</div><div class="hdr-sub">Connections · Group 4</div></div>
+    </div>
+    <div class="mistakes-wrap">
+      Mistakes:
+      <div class="mistake-dot" id="md0"></div>
+      <div class="mistake-dot" id="md1"></div>
+      <div class="mistake-dot" id="md2"></div>
+      <div class="mistake-dot" id="md3"></div>
+    </div>
+  </header>
+  <div class="game-body">
+    <div class="solved-rows" id="solved-rows"></div>
+    <div id="word-grid"></div>
+    <div class="hint-txt" id="hint-txt">Select 4 words</div>
+    <div class="btn-row">
+      <button class="btn" id="btn-shuffle">Shuffle</button>
+      <button class="btn" id="btn-deselect">Deselect All</button>
+      <button class="btn gold" id="btn-submit">Submit</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="result-overlay">
+  <div class="result-card">
+    <div class="result-icon" id="res-icon">🎉</div>
+    <div class="result-title" id="res-title">Brilliant!</div>
+    <div class="result-sub" id="res-sub">You found all four groups</div>
+    <div class="result-btns">
+      <button class="res-btn" id="res-home">Home</button>
+      <button class="res-btn gold" id="res-play">New Puzzle</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PUZZLES = [
+  {
+    categories: [
+      { title: '🌟 Space objects', words: ['COMET','NEBULA','QUASAR','PULSAR'], level: 0 },
+      { title: '🌲 Types of tree', words: ['MAPLE','BIRCH','CEDAR','ASPEN'], level: 1 },
+      { title: '📻 NATO alphabet', words: ['ECHO','DELTA','FOXTROT','ROMEO'], level: 2 },
+      { title: '💎 Shades of pink/red', words: ['CORAL','RUBY','PEARL','MAGENTA'], level: 3 },
+    ]
+  },
+  {
+    categories: [
+      { title: '🐟 Types of fish', words: ['TROUT','PERCH','BREAM','RUFFE'], level: 0 },
+      { title: '🏔️ Mountain ranges', words: ['ANDES','ALPS','ATLAS','URALS'], level: 1 },
+      { title: '🎭 Shakespeare plays', words: ['HAMLET','OTHELLO','MACBETH','TEMPEST'], level: 2 },
+      { title: '🔵 Shades of blue', words: ['COBALT','AZURE','INDIGO','TEAL'], level: 3 },
+    ]
+  },
+  {
+    categories: [
+      { title: '🌿 Herbs & spices', words: ['THYME','CUMIN','BASIL','ANISE'], level: 0 },
+      { title: '🎵 Music genres', words: ['BLUES','JAZZ','SOUL','FUNK'], level: 1 },
+      { title: '🦁 Big cats', words: ['LION','TIGER','JAGUAR','CHEETAH'], level: 2 },
+      { title: '🌑 Types of eclipse', words: ['TOTAL','ANNULAR','HYBRID','PARTIAL'], level: 3 },
+    ]
+  },
+];
+
+const CAT_COLORS = ['cat-0','cat-1','cat-2','cat-3'];
+let puzzle = null;
+let words = [];
+let selected = new Set();
+let solved = [];
+let mistakes = 0;
+let gameActive = false;
+const MAX_MISTAKES = 4;
+
+function loadPuzzle() {
+  puzzle = PUZZLES[Math.floor(Math.random() * PUZZLES.length)];
+  words = shuffle(puzzle.categories.flatMap(c => c.words));
+  selected.clear(); solved = []; mistakes = 0;
+  document.getElementById('solved-rows').innerHTML = '';
+  for (let i = 0; i < 4; i++) document.getElementById(`md${i}`).classList.remove('used');
+  renderGrid();
+  updateHint();
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+function renderGrid() {
+  const grid = document.getElementById('word-grid');
+  grid.innerHTML = '';
+  words.forEach(w => {
+    const card = document.createElement('div');
+    card.className = 'word-card' + (selected.has(w) ? ' selected' : '');
+    card.id = `card-${w}`;
+    card.textContent = w;
+    card.addEventListener('click', () => toggleWord(w));
+    grid.appendChild(card);
+  });
+}
+
+function toggleWord(w) {
+  if (selected.has(w)) {
+    selected.delete(w);
+  } else {
+    if (selected.size >= 4) { showToast('Deselect one first', 'warn'); return; }
+    selected.add(w);
+    document.getElementById(`card-${w}`).classList.add('pop');
+    setTimeout(() => { const el = document.getElementById(`card-${w}`); if(el) el.classList.remove('pop'); }, 350);
+  }
+  document.getElementById(`card-${w}`).classList.toggle('selected', selected.has(w));
+  updateHint();
+}
+
+function updateHint() {
+  const n = selected.size;
+  document.getElementById('hint-txt').textContent = n === 0 ? 'Select 4 words' : n < 4 ? `${n} selected — pick ${4-n} more` : 'Ready to submit!';
+}
+
+function submitGuess() {
+  if (selected.size !== 4) { showToast('Select exactly 4 words', 'warn'); return; }
+  const sel = [...selected];
+  const match = puzzle.categories.find(c => !solved.includes(c) && c.words.every(w => sel.includes(w)));
+  if (match) {
+    // correct
+    solved.push(match);
+    sel.forEach(w => {
+      words = words.filter(x => x !== w);
+      const el = document.getElementById(`card-${w}`);
+      if (el) el.remove();
+    });
+    addSolvedRow(match);
+    selected.clear();
+    updateHint();
+    showToast('✓ Correct!', 'good');
+    if (solved.length === puzzle.categories.length) setTimeout(showResult, 600);
+  } else {
+    mistakes++;
+    document.getElementById(`md${mistakes-1}`).classList.add('used');
+    // check if one away
+    const oneAway = puzzle.categories.find(c => !solved.includes(c) && c.words.filter(w => sel.includes(w)).length === 3);
+    if (oneAway) showToast('One away...', 'warn');
+    else showToast('Not a group', 'error');
+    sel.forEach(w => {
+      const el = document.getElementById(`card-${w}`);
+      if (el) { el.classList.add('shake'); setTimeout(() => el.classList.remove('shake'), 500); }
+    });
+    selected.clear();
+    renderGrid();
+    updateHint();
+    if (mistakes >= MAX_MISTAKES) setTimeout(() => showResult(false), 400);
+  }
+}
+
+function addSolvedRow(cat) {
+  const row = document.createElement('div');
+  row.className = `solved-row ${CAT_COLORS[cat.level]}`;
+  row.innerHTML = `<div class="solved-row-title">${cat.title}</div><div class="solved-row-words">${cat.words.join('  ·  ')}</div>`;
+  document.getElementById('solved-rows').appendChild(row);
+}
+
+function showResult(won = true) {
+  document.getElementById('res-icon').textContent = won ? (mistakes === 0 ? '🏆' : '🎉') : '😞';
+  document.getElementById('res-title').textContent = won ? (mistakes === 0 ? 'Perfect!' : 'Solved!') : 'Stumped!';
+  document.getElementById('res-sub').textContent = won
+    ? `Found all groups with ${mistakes} mistake${mistakes !== 1 ? 's' : ''}`
+    : `${solved.length} of 4 groups found`;
+  document.getElementById('result-overlay').classList.add('show');
+}
+
+let toastT;
+function showToast(msg, type='info') {
+  const el = document.getElementById('toast');
+  const bg = {error:'#c0392b',warn:'#d35400',good:'#1a3a2a',info:'#1e1e30'};
+  const fg = {error:'#fff',warn:'#fff',good:'#52c98a',info:'#c0c0d8'};
+  el.textContent = msg; el.style.background = bg[type]; el.style.color = fg[type];
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+document.getElementById('play-btn').addEventListener('click', () => {
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('game').classList.add('active');
+  gameActive = true; loadPuzzle();
+});
+document.getElementById('back-btn').addEventListener('click', () => {
+  document.getElementById('landing').style.display = 'flex';
+  document.getElementById('game').classList.remove('active');
+  document.getElementById('result-overlay').classList.remove('show');
+  gameActive = false;
+});
+document.getElementById('res-home').addEventListener('click', () => {
+  document.getElementById('result-overlay').classList.remove('show');
+  document.getElementById('landing').style.display = 'flex';
+  document.getElementById('game').classList.remove('active');
+  gameActive = false;
+});
+document.getElementById('res-play').addEventListener('click', () => {
+  document.getElementById('result-overlay').classList.remove('show');
+  loadPuzzle();
+});
+document.getElementById('btn-shuffle').addEventListener('click', () => {
+  words = shuffle(words); selected.clear(); renderGrid(); updateHint();
+});
+document.getElementById('btn-deselect').addEventListener('click', () => {
+  selected.clear(); renderGrid(); updateHint();
+});
+document.getElementById('btn-submit').addEventListener('click', submitGuess);
+</script>
+</body>
+</html>

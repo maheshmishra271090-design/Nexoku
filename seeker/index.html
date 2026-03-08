@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Seeker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0f0f1a; --surface:#131320; --surface2:#1a1a2a; --border:#1e1e30;
+  --gold:#F5C518; --text:#ddddf0; --text-muted:#55556a; --text-dim:#2a2a3e;
+  --found:#1a3a2a; --found-fg:#52c98a;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;flex-direction:column;align-items:center}
+
+/* LANDING */
+#landing{width:100%;height:100vh;height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:24px}
+.land-hero{display:flex;flex-direction:column;align-items:center;text-align:center;z-index:1;animation:fadeUp .6s ease both}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);opacity:.8;margin-bottom:14px}
+.land-title{font-family:'DM Serif Display',serif;font-size:clamp(56px,12vw,96px);color:var(--text);line-height:.9;letter-spacing:-2px;margin-bottom:8px}
+.land-title em{color:var(--gold);font-style:normal}
+.land-sub{font-size:13px;color:var(--text-muted);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:32px;font-weight:500}
+
+/* Mini grid preview */
+.grid-preview{display:grid;grid-template-columns:repeat(6,34px);gap:3px;margin-bottom:32px}
+.gp-cell{width:34px;height:34px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:14px;font-weight:700;background:var(--surface2);border:1px solid var(--border);color:#7070a0}
+.gp-cell.hi{background:#1a3a2a;border-color:var(--found-fg);color:var(--found-fg)}
+.play-btn{background:var(--gold);color:var(--bg);border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:14px 52px;border-radius:50px;transition:transform .2s,box-shadow .2s,background .15s;box-shadow:0 0 28px rgba(245,197,24,.2),0 4px 16px rgba(0,0,0,.4)}
+.play-btn:hover{background:#ffdb1a;transform:scale(1.05) translateY(-2px);box-shadow:0 0 44px rgba(245,197,24,.35),0 8px 24px rgba(0,0,0,.5)}
+.rules{display:flex;gap:10px;margin-top:28px;animation:fadeUp .6s .15s ease both}
+.rule{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-align:center;min-width:100px}
+.rule-icon{font-size:18px;display:block;margin-bottom:6px}
+.rule-txt{font-size:11px;color:var(--text-muted);line-height:1.4}
+.rule-txt strong{color:var(--text);display:block;font-size:12px;margin-bottom:2px}
+
+/* GAME */
+#game{display:none;width:100%;height:100vh;height:100dvh;flex-direction:column;align-items:center;overflow:hidden;animation:fadeUp .35s ease}
+#game.active{display:flex}
+header{width:100%;max-width:500px;display:flex;justify-content:space-between;align-items:center;padding:14px 20px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.hdr-l{display:flex;align-items:center;gap:6px}
+.back-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:2px 8px 2px 0;transition:color .15s}
+.back-btn:hover{color:var(--gold)}
+.hdr-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--gold)}
+.hdr-sub{font-size:10px;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:1px}
+#timer{font-size:18px;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums;letter-spacing:1px}
+
+.game-body{flex:1;display:flex;gap:16px;padding:12px 16px;width:100%;max-width:500px;overflow:hidden;align-items:flex-start;justify-content:center}
+
+/* Grid */
+#grid-wrap{flex-shrink:0}
+#grid{display:grid;gap:3px;user-select:none}
+.cell{
+  width:clamp(24px,8.5vw,32px);height:clamp(24px,8.5vw,32px);border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'DM Serif Display',serif;font-size:14px;font-weight:700;
+  background:var(--surface2);border:1.5px solid var(--border);
+  color:#9090b8;cursor:pointer;transition:background .1s,color .1s,border-color .1s;
+}
+.cell.hover{background:#252538;border-color:#44445a;color:var(--text)}
+.cell.selected{background:#2a2a1a;border-color:var(--gold);color:var(--gold)}
+.cell.found{background:var(--found);border-color:var(--found-fg);color:var(--found-fg)}
+.cell.found-flash{animation:foundFlash .4s ease}
+
+/* Word list */
+.word-panel{display:flex;flex-direction:column;gap:6px;flex:1;overflow-y:auto;max-height:100%}
+.word-panel-title{font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px}
+.word-item{
+  background:var(--surface);border:1px solid var(--border);border-radius:7px;
+  padding:7px 12px;font-size:13px;font-weight:600;color:var(--text-muted);
+  letter-spacing:1px;transition:all .2s;
+}
+.word-item.found{background:var(--found);border-color:var(--found-fg);color:var(--found-fg);text-decoration:line-through;text-decoration-color:#52c98a}
+
+/* Result overlay */
+#result-overlay{position:fixed;inset:0;background:rgba(15,15,26,.92);display:none;align-items:center;justify-content:center;z-index:200}
+#result-overlay.show{display:flex;animation:fadeIn .3s ease}
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 40px;text-align:center;max-width:320px}
+.result-icon{font-size:44px;margin-bottom:14px}
+.result-title{font-family:'DM Serif Display',serif;font-size:28px;color:var(--gold);margin-bottom:8px}
+.result-sub{font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.5}
+.result-btns{display:flex;gap:10px;justify-content:center}
+.res-btn{padding:10px 22px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;transition:background .15s,transform .1s;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted)}
+.res-btn.gold{background:var(--gold);color:var(--bg);border-color:transparent}
+.res-btn:hover{transform:scale(1.04)}
+.res-btn.gold:hover{background:#e8c400}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes foundFlash{0%{transform:scale(1)}30%{transform:scale(1.18)}100%{transform:scale(1)}}
+
+  /* ── Mobile ── */
+  html{-webkit-text-size-adjust:100%}
+  body{-webkit-tap-highlight-color:transparent;padding-bottom:env(safe-area-inset-bottom)}
+  button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  #landing{padding:20px 16px calc(20px + env(safe-area-inset-bottom));height:100dvh}
+  #game{height:100dvh;padding-bottom:env(safe-area-inset-bottom)}
+  header{padding-top:max(14px,env(safe-area-inset-top))}
+  .back-btn,.hdr-back{min-width:44px;min-height:44px;display:flex;align-items:center}
+  .play-btn{min-height:52px;touch-action:manipulation;font-size:clamp(12px,3.5vw,14px)}
+  .land-title{font-size:clamp(44px,13vw,90px)}
+  .land-sub{font-size:clamp(10px,3vw,13px)}
+  .eyebrow{font-size:clamp(9px,2.5vw,11px)}
+  @media(max-width:380px){.rules{flex-wrap:nowrap;gap:6px}.rule{min-width:80px;padding:10px 8px}}
+  @media(max-height:680px){.landing-rules{display:none}.hex-preview,.grid-preview,.word-preview,.scramble-preview,.def-preview,.preview-grid{transform:scale(.85);transform-origin:center top}}
+
+  @media(max-width:420px){.cell{width:28px;height:28px;font-size:12px}#grid{gap:2px}}
+  @media(max-width:360px){.cell{width:24px;height:24px;font-size:11px}}
+  .cell{touch-action:none}
+  .game-body{flex-direction:column;gap:10px;padding:10px 14px;overflow:hidden}
+  .word-panel{flex-direction:row;flex-wrap:wrap;max-height:none;gap:5px;align-content:flex-start}
+  .word-item{padding:5px 10px;font-size:11px}
+  #grid-wrap{align-self:center}
+
+</style>
+</head>
+<body>
+
+<!-- LANDING -->
+<section id="landing">
+  <div class="land-hero">
+    <div class="eyebrow">Word Search · Daily</div>
+    <div class="land-title">See<em>ker</em></div>
+    <div class="land-sub">Find all the hidden words</div>
+    <div class="grid-preview">
+      <div class="gp-cell hi">S</div><div class="gp-cell">T</div><div class="gp-cell">A</div><div class="gp-cell hi">K</div><div class="gp-cell">R</div><div class="gp-cell">E</div>
+      <div class="gp-cell">R</div><div class="gp-cell hi">E</div><div class="gp-cell">N</div><div class="gp-cell">G</div><div class="gp-cell hi">E</div><div class="gp-cell">W</div>
+      <div class="gp-cell">A</div><div class="gp-cell">L</div><div class="gp-cell hi">E</div><div class="gp-cell">H</div><div class="gp-cell">I</div><div class="gp-cell hi">R</div>
+      <div class="gp-cell hi">P</div><div class="gp-cell">O</div><div class="gp-cell">C</div><div class="gp-cell hi">E</div><div class="gp-cell">A</div><div class="gp-cell">N</div>
+      <div class="gp-cell">H</div><div class="gp-cell">W</div><div class="gp-cell">A</div><div class="gp-cell">V</div><div class="gp-cell hi">S</div><div class="gp-cell">E</div>
+      <div class="gp-cell">E</div><div class="gp-cell">O</div><div class="gp-cell">R</div><div class="gp-cell">I</div><div class="gp-cell">D</div><div class="gp-cell hi">E</div>
+    </div>
+    <button class="play-btn" id="play-btn">Play Now</button>
+  </div>
+  <div class="rules">
+    <div class="rule"><span class="rule-icon">👆</span><div class="rule-txt"><strong>Click & drag</strong>Draw across letters to select</div></div>
+    <div class="rule"><span class="rule-icon">↔️</span><div class="rule-txt"><strong>All directions</strong>Words go any direction</div></div>
+    <div class="rule"><span class="rule-icon">⏱️</span><div class="rule-txt"><strong>Beat the clock</strong>Find all words in time</div></div>
+  </div>
+</section>
+
+<!-- GAME -->
+<div id="game">
+  <header>
+    <div class="hdr-l">
+      <button class="back-btn" id="back-btn">←</button>
+      <div><div class="hdr-title">Seeker</div><div class="hdr-sub">Word Search · Find All</div></div>
+    </div>
+    <span id="timer">0:00</span>
+  </header>
+
+  <div class="game-body">
+    <div id="grid-wrap"><div id="grid"></div></div>
+    <div class="word-panel">
+      <div class="word-panel-title">Find these</div>
+      <div id="word-list"></div>
+    </div>
+  </div>
+</div>
+
+<div id="result-overlay">
+  <div class="result-card">
+    <div class="result-icon" id="res-icon">🎉</div>
+    <div class="result-title" id="res-title">Found them all!</div>
+    <div class="result-sub" id="res-sub">Completed in <strong id="res-time">0:00</strong></div>
+    <div class="result-btns">
+      <button class="res-btn" id="res-home">Home</button>
+      <button class="res-btn gold" id="res-play">Play Again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PUZZLES = [
+  { words:['STAR','MOON','COMET','ORBIT','SOLAR','GALAXY','NEBULA'] },
+  { words:['OCEAN','REEF','CORAL','SHARK','WHALE','TIDAL','SURGE'] },
+  { words:['FIRE','SMOKE','BLAZE','EMBER','FLAME','IGNITE','SPARK'] },
+  { words:['CRYPT','GHOST','RAVEN','SPELL','WITCH','CURSE','HAUNT'] },
+];
+
+const GRID_SIZE = 10;
+let grid = [], placed = [], foundWords = new Set(), wordCells = {};
+let isDragging = false, dragStart = null, dragCells = [];
+let timerInterval, elapsedSeconds = 0;
+let currentPuzzle = null;
+let gameActive = false;
+
+function buildPuzzle() {
+  currentPuzzle = PUZZLES[Math.floor(Math.random() * PUZZLES.length)];
+  grid = Array.from({length:GRID_SIZE}, () => Array(GRID_SIZE).fill(''));
+  placed = []; wordCells = {}; foundWords = new Set();
+  currentPuzzle.words.forEach(w => placeWord(w.toUpperCase()));
+  fillGrid();
+  renderGrid();
+  renderWordList();
+}
+
+const DIRS = [[0,1],[1,0],[0,-1],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];
+
+function placeWord(word) {
+  let attempts = 0;
+  while (attempts < 200) {
+    attempts++;
+    const [dr, dc] = DIRS[Math.floor(Math.random()*DIRS.length)];
+    const r = Math.floor(Math.random()*GRID_SIZE);
+    const c = Math.floor(Math.random()*GRID_SIZE);
+    let fits = true;
+    const cells = [];
+    for (let i = 0; i < word.length; i++) {
+      const nr = r + dr*i, nc = c + dc*i;
+      if (nr<0||nr>=GRID_SIZE||nc<0||nc>=GRID_SIZE) { fits=false; break; }
+      if (grid[nr][nc] && grid[nr][nc] !== word[i]) { fits=false; break; }
+      cells.push([nr,nc]);
+    }
+    if (fits) {
+      cells.forEach(([nr,nc],i) => grid[nr][nc] = word[i]);
+      wordCells[word] = cells;
+      placed.push(word);
+      return;
+    }
+  }
+}
+
+const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+function fillGrid() {
+  for (let r=0;r<GRID_SIZE;r++) for (let c=0;c<GRID_SIZE;c++)
+    if (!grid[r][c]) grid[r][c] = ALPHA[Math.floor(Math.random()*ALPHA.length)];
+}
+
+function renderGrid() {
+  const el = document.getElementById('grid');
+  el.style.gridTemplateColumns = `repeat(${GRID_SIZE},clamp(24px,8.5vw,32px))`;
+  el.innerHTML = '';
+  for (let r=0;r<GRID_SIZE;r++) for (let c=0;c<GRID_SIZE;c++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.textContent = grid[r][c];
+    cell.dataset.r = r; cell.dataset.c = c;
+    cell.addEventListener('mousedown', e => { e.preventDefault(); startDrag(r,c); });
+    cell.addEventListener('mouseenter', () => { if(isDragging) extendDrag(r,c); });
+    cell.addEventListener('touchstart', e => { e.preventDefault(); startDrag(r,c); }, {passive:false});
+    cell.addEventListener('touchmove', e => {
+      e.preventDefault();
+      const t = e.touches[0];
+      const el2 = document.elementFromPoint(t.clientX, t.clientY);
+      if (el2 && el2.classList.contains('cell')) extendDrag(+el2.dataset.r, +el2.dataset.c);
+    }, {passive:false});
+    el.appendChild(cell);
+  }
+  document.addEventListener('mouseup', endDrag);
+  document.addEventListener('touchend', endDrag);
+}
+
+function getCell(r,c) { return document.querySelector(`[data-r="${r}"][data-c="${c}"]`); }
+
+function startDrag(r,c) {
+  isDragging = true; dragStart = [r,c]; dragCells = [[r,c]];
+  clearHighlight();
+  getCell(r,c).classList.add('selected');
+}
+
+function extendDrag(r,c) {
+  if (!isDragging) return;
+  const [sr,sc] = dragStart;
+  const dr = r-sr, dc = c-sc;
+  const len = Math.max(Math.abs(dr),Math.abs(dc));
+  if (len===0) { dragCells=[[sr,sc]]; }
+  else {
+    const stepR = dr===0?0:dr/Math.abs(dr), stepC = dc===0?0:dc/Math.abs(dc);
+    if (Math.abs(dr)!==Math.abs(dc) && dr!==0 && dc!==0) return;
+    const cells = [];
+    for (let i=0;i<=len;i++) cells.push([sr+stepR*i, sc+stepC*i]);
+    dragCells = cells;
+  }
+  clearHighlight();
+  dragCells.forEach(([cr,cc]) => {
+    const el = getCell(cr,cc);
+    if (el && !el.classList.contains('found')) el.classList.add('selected');
+  });
+}
+
+function endDrag() {
+  if (!isDragging) return;
+  isDragging = false;
+  const word = dragCells.map(([r,c]) => grid[r][c]).join('');
+  const wordRev = word.split('').reverse().join('');
+  const match = currentPuzzle.words.find(w => w === word || w === wordRev);
+  if (match && !foundWords.has(match)) {
+    foundWords.add(match);
+    dragCells.forEach(([r,c]) => {
+      const el = getCell(r,c);
+      el.classList.remove('selected'); el.classList.add('found');
+      el.style.animation='none'; void el.offsetWidth; el.classList.add('found-flash');
+    });
+    markWordFound(match);
+    if (foundWords.size === currentPuzzle.words.length) setTimeout(showResult, 500);
+  } else {
+    clearHighlight();
+  }
+  dragCells = [];
+}
+
+function clearHighlight() {
+  document.querySelectorAll('.cell.selected').forEach(el => el.classList.remove('selected'));
+}
+
+function renderWordList() {
+  const list = document.getElementById('word-list');
+  list.innerHTML = '';
+  currentPuzzle.words.forEach(w => {
+    const item = document.createElement('div');
+    item.className = 'word-item';
+    item.id = `word-${w}`;
+    item.textContent = w;
+    list.appendChild(item);
+  });
+}
+
+function markWordFound(word) {
+  const el = document.getElementById(`word-${word}`);
+  if (el) el.classList.add('found');
+}
+
+function startTimer() {
+  elapsedSeconds = 0;
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    elapsedSeconds++;
+    const m = Math.floor(elapsedSeconds/60), s = elapsedSeconds%60;
+    document.getElementById('timer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  }, 1000);
+}
+
+function showResult() {
+  clearInterval(timerInterval);
+  const m = Math.floor(elapsedSeconds/60), s = elapsedSeconds%60;
+  const timeStr = `${m}:${s.toString().padStart(2,'0')}`;
+  document.getElementById('res-icon').textContent = elapsedSeconds < 60 ? '⚡' : elapsedSeconds < 120 ? '🎉' : '👍';
+  document.getElementById('res-title').textContent = elapsedSeconds < 60 ? 'Lightning fast!' : 'Puzzle Solved!';
+  document.getElementById('res-time').textContent = timeStr;
+  document.getElementById('result-overlay').classList.add('show');
+}
+
+document.getElementById('play-btn').addEventListener('click', () => {
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('game').classList.add('active');
+  gameActive = true; buildPuzzle(); startTimer();
+});
+document.getElementById('back-btn').addEventListener('click', () => {
+  clearInterval(timerInterval);
+  document.getElementById('landing').style.display = 'flex';
+  document.getElementById('game').classList.remove('active');
+  document.getElementById('result-overlay').classList.remove('show');
+  gameActive = false;
+});
+document.getElementById('res-home').addEventListener('click', () => {
+  clearInterval(timerInterval);
+  document.getElementById('result-overlay').classList.remove('show');
+  document.getElementById('landing').style.display = 'flex';
+  document.getElementById('game').classList.remove('active');
+  gameActive = false;
+});
+document.getElementById('res-play').addEventListener('click', () => {
+  document.getElementById('result-overlay').classList.remove('show');
+  buildPuzzle(); startTimer();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Define</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f1a;--surface:#131320;--surface2:#1a1a2a;--border:#1e1e30;--gold:#F5C518;--text:#ddddf0;--text-muted:#55556a;--text-dim:#2a2a3e;--error:#c0392b;--good:#52c98a;--good-bg:#1a3a2a}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;flex-direction:column;align-items:center}
+
+/* LANDING */
+#landing{width:100%;height:100vh;height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:24px}
+.land-bg{position:absolute;inset:0;pointer-events:none;opacity:.03}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;z-index:1;animation:fadeUp .6s ease both}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);opacity:.8;margin-bottom:14px}
+.land-title{font-family:'DM Serif Display',serif;font-size:clamp(56px,12vw,100px);color:var(--text);line-height:.9;letter-spacing:-2px;margin-bottom:8px}
+.land-title em{color:var(--gold);font-style:normal}
+.land-sub{font-size:13px;color:var(--text-muted);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:30px;font-weight:500}
+.def-preview{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 28px;max-width:340px;width:100%;margin-bottom:30px;text-align:left}
+.def-preview-label{font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+.def-preview-text{font-family:'DM Serif Display',serif;font-size:16px;color:var(--text);line-height:1.5;margin-bottom:14px}
+.def-preview-blanks{display:flex;gap:5px;justify-content:center}
+.blank-tile{width:32px;height:38px;border-radius:6px;border:1.5px solid;display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:16px;font-weight:700}
+.blank-tile.gold{border-color:var(--gold);background:#1e1a00;color:var(--gold)}
+.blank-tile.dim{border-color:var(--border);background:var(--surface2);color:var(--text-dim)}
+.play-btn{background:var(--gold);color:var(--bg);border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:14px 52px;border-radius:50px;transition:transform .2s,box-shadow .2s,background .15s;box-shadow:0 0 28px rgba(245,197,24,.2),0 4px 16px rgba(0,0,0,.4)}
+.play-btn:hover{background:#ffdb1a;transform:scale(1.05) translateY(-2px)}
+.rules{display:flex;gap:10px;margin-top:28px;animation:fadeUp .6s .15s ease both}
+.rule{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-align:center;min-width:100px}
+.rule-icon{font-size:18px;display:block;margin-bottom:6px}
+.rule-txt{font-size:11px;color:var(--text-muted);line-height:1.4}
+.rule-txt strong{color:var(--text);display:block;font-size:12px;margin-bottom:2px}
+
+/* GAME */
+#game{display:none;width:100%;height:100vh;height:100dvh;flex-direction:column;align-items:center;overflow:hidden;animation:fadeUp .35s ease}
+#game.active{display:flex}
+header{width:100%;max-width:460px;display:flex;justify-content:space-between;align-items:center;padding:14px 20px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.hdr-l{display:flex;align-items:center;gap:6px}
+.back-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:2px 8px 2px 0;transition:color .15s}
+.back-btn:hover{color:var(--gold)}
+.hdr-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--gold)}
+.hdr-sub{font-size:10px;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:1px}
+.score-wrap{text-align:right}
+.score-val{font-size:16px;font-weight:700;color:var(--gold);display:block}
+.score-lbl{font-size:9px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase}
+
+.game-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 20px;width:100%;max-width:460px;gap:16px;overflow:hidden}
+
+/* Progress */
+.prog-row{display:flex;align-items:center;gap:10px;width:100%}
+.prog-track{flex:1;height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--gold),#ffe066);border-radius:2px;transition:width .5s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 6px rgba(245,197,24,.4)}
+.prog-lbl{font-size:11px;color:var(--text-muted);min-width:36px;text-align:right}
+
+/* Question card */
+.q-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;width:100%;position:relative}
+.q-num{font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+.q-def{font-family:'DM Serif Display',serif;font-size:17px;color:var(--text);line-height:1.5;margin-bottom:14px}
+.q-hint{font-size:11px;color:var(--text-muted);letter-spacing:.5px}
+.q-hint span{color:var(--gold);font-weight:700}
+.q-part{font-size:11px;color:var(--text-muted);margin-top:6px;font-style:italic}
+
+/* Letter tiles */
+.tiles-row{display:flex;gap:clamp(3px,1.2vw,5px);justify-content:center;flex-wrap:wrap;width:100%;max-width:100%}
+.ans-tile{
+  width:clamp(28px,9vw,36px);height:clamp(34px,10.5vw,42px);border-radius:6px;border:1.5px solid var(--border);
+  background:var(--surface2);display:flex;align-items:center;justify-content:center;
+  font-family:'DM Serif Display',serif;font-size:18px;font-weight:700;color:var(--text);
+  transition:all .15s;position:relative;
+}
+.ans-tile.active{border-color:var(--gold);background:#1e1a00;color:var(--gold);box-shadow:0 0 8px rgba(245,197,24,.25)}
+.ans-tile.correct{border-color:var(--good);background:var(--good-bg);color:var(--good)}
+.ans-tile.wrong{border-color:var(--error);background:#2a0808;color:#ff6b6b;animation:tileShake .4s ease}
+.ans-tile.hint{border-color:#553399;background:#1a0a2e;color:#a78bfa}
+.cursor-line{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:18px;height:2px;background:var(--gold);border-radius:1px;animation:cursorBlink 1s ease infinite}
+
+/* Keyboard */
+#kb{display:flex;flex-direction:column;gap:6px;width:100%}
+.kb-row{display:flex;justify-content:center;gap:5px}
+.kkey{height:clamp(40px,11vw,46px);min-width:clamp(24px,7.5vw,30px);flex:1;max-width:clamp(28px,9vw,36px);border-radius:6px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;background:var(--surface2);color:var(--text);transition:background .15s,transform .1s;text-transform:uppercase;letter-spacing:.3px}
+.kkey.wide{min-width:clamp(38px,11vw,48px);max-width:clamp(44px,13vw,54px);font-size:10px}
+.kkey:hover{background:#252535;transform:scale(1.04)}
+.kkey:active{transform:scale(.95)}
+.kkey.used{background:#151524;color:#333350}
+.kkey.correct{background:var(--good-bg);color:var(--good)}
+
+/* Result overlay */
+#result-overlay{position:fixed;inset:0;background:rgba(15,15,26,.92);display:none;align-items:center;justify-content:center;z-index:200}
+#result-overlay.show{display:flex;animation:fadeIn .3s ease}
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 40px;text-align:center;max-width:320px;width:100%}
+.result-icon{font-size:44px;margin-bottom:14px}
+.result-title{font-family:'DM Serif Display',serif;font-size:28px;color:var(--gold);margin-bottom:8px}
+.result-sub{font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6}
+.result-btns{display:flex;gap:10px;justify-content:center}
+.res-btn{padding:10px 22px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;transition:background .15s,transform .1s;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted)}
+.res-btn.gold{background:var(--gold);color:var(--bg);border-color:transparent}
+.res-btn:hover{transform:scale(1.04)}
+.res-btn.gold:hover{background:#e8c400}
+
+#toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);padding:7px 18px;border-radius:8px;font-size:12px;font-weight:700;white-space:nowrap;pointer-events:none;opacity:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+#toast.show{animation:toastAnim 2s ease forwards}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes toastAnim{0%{opacity:0;transform:translate(-50%,-8px)}10%{opacity:1;transform:translate(-50%,0)}80%{opacity:1}100%{opacity:0}}
+@keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes tileShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+  /* ── Mobile ── */
+  html{-webkit-text-size-adjust:100%}
+  body{-webkit-tap-highlight-color:transparent;padding-bottom:env(safe-area-inset-bottom)}
+  button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  #landing{padding:20px 16px calc(20px + env(safe-area-inset-bottom));height:100dvh}
+  #game{height:100dvh;padding-bottom:env(safe-area-inset-bottom)}
+  header{padding-top:max(14px,env(safe-area-inset-top))}
+  .back-btn,.hdr-back{min-width:44px;min-height:44px;display:flex;align-items:center}
+  .play-btn{min-height:52px;touch-action:manipulation;font-size:clamp(12px,3.5vw,14px)}
+  .land-title{font-size:clamp(44px,13vw,90px)}
+  .land-sub{font-size:clamp(10px,3vw,13px)}
+  .eyebrow{font-size:clamp(9px,2.5vw,11px)}
+  @media(max-width:380px){.rules{flex-wrap:nowrap;gap:6px}.rule{min-width:80px;padding:10px 8px}}
+  @media(max-height:680px){.landing-rules{display:none}.hex-preview,.grid-preview,.word-preview,.scramble-preview,.def-preview,.preview-grid{transform:scale(.85);transform-origin:center top}}
+
+  @media(max-width:380px){.ans-tile{width:30px;height:36px;font-size:15px}.kkey{height:40px;font-size:11px}}
+  @media(max-height:720px){.q-card{padding:14px 16px}.q-def{font-size:14px}}
+  .kkey{min-height:44px;touch-action:manipulation}
+  .ans-tile{touch-action:manipulation}
+  .game-body{gap:clamp(8px,2vw,16px);padding:10px 16px}
+
+</style>
+</head>
+<body>
+
+<section id="landing">
+  <svg class="land-bg" style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 400 600" preserveAspectRatio="xMidYMid slice">
+    <defs><pattern id="lp" x="0" y="0" width="60" height="20" patternUnits="userSpaceOnUse"><line x1="0" y1="10" x2="60" y2="10" stroke="#F5C518" stroke-width="1"/></pattern></defs>
+    <rect width="100%" height="100%" fill="url(#lp)"/>
+  </svg>
+  <div class="hero">
+    <div class="eyebrow">Vocabulary · Daily</div>
+    <div class="land-title">De<em>fine</em></div>
+    <div class="land-sub">Guess the word from its definition</div>
+    <div class="def-preview">
+      <div class="def-preview-label">Definition</div>
+      <div class="def-preview-text">"The quality of being pleasantly smooth and musical to hear"</div>
+      <div class="def-preview-blanks">
+        <div class="blank-tile gold">M</div>
+        <div class="blank-tile dim">_</div>
+        <div class="blank-tile dim">_</div>
+        <div class="blank-tile dim">_</div>
+        <div class="blank-tile dim">_</div>
+        <div class="blank-tile dim">_</div>
+        <div class="blank-tile dim">_</div>
+      </div>
+    </div>
+    <button class="play-btn" id="play-btn">Play Now</button>
+  </div>
+  <div class="rules">
+    <div class="rule"><span class="rule-icon">📖</span><div class="rule-txt"><strong>Read the clue</strong>A definition is shown</div></div>
+    <div class="rule"><span class="rule-icon">⌨️</span><div class="rule-txt"><strong>Type the word</strong>Fill in the letter tiles</div></div>
+    <div class="rule"><span class="rule-icon">💡</span><div class="rule-txt"><strong>Hints available</strong>Reveal a letter if stuck</div></div>
+  </div>
+</section>
+
+<div id="game">
+  <header>
+    <div class="hdr-l">
+      <button class="back-btn" id="back-btn">←</button>
+      <div><div class="hdr-title">Define</div><div class="hdr-sub">Vocabulary · Guess the Word</div></div>
+    </div>
+    <div class="score-wrap">
+      <span class="score-val" id="score-val">0</span>
+      <span class="score-lbl">Score</span>
+    </div>
+  </header>
+  <div class="game-body">
+    <div class="prog-row">
+      <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+      <span class="prog-lbl" id="prog-lbl">0/10</span>
+    </div>
+    <div class="q-card">
+      <div class="q-num" id="q-num">Question 1 of 10</div>
+      <div class="q-def" id="q-def">Loading...</div>
+      <div class="q-hint">Letters: <span id="q-len">?</span> &nbsp;·&nbsp; <span id="q-part-speech"></span></div>
+    </div>
+    <div class="tiles-row" id="tiles-row"></div>
+    <div id="kb"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="result-overlay">
+  <div class="result-card">
+    <div class="result-icon" id="res-icon">🎉</div>
+    <div class="result-title" id="res-title">Well done!</div>
+    <div class="result-sub" id="res-sub">You scored <strong id="final-score">0</strong> out of 100</div>
+    <div class="result-btns">
+      <button class="res-btn" id="res-home">Home</button>
+      <button class="res-btn gold" id="res-play">Play Again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  {word:'EPHEMERAL', def:'Lasting for a very short time; transitory', part:'adjective'},
+  {word:'MELLIFLUOUS', def:'Pleasant and musical to hear; sweet-sounding', part:'adjective'},
+  {word:'SOLITUDE', def:'The state of being alone, often by choice', part:'noun'},
+  {word:'ARDENT', def:'Having or showing intense enthusiasm or passion', part:'adjective'},
+  {word:'ZENITH', def:'The point in the sky directly above an observer; highest point', part:'noun'},
+  {word:'LACONIC', def:'Using very few words; brief and concise', part:'adjective'},
+  {word:'SERENE', def:'Calm, peaceful, and untroubled', part:'adjective'},
+  {word:'CASCADE', def:'A small waterfall; to fall or hang in large quantities', part:'noun/verb'},
+  {word:'ENIGMA', def:'A mysterious or puzzling person or thing', part:'noun'},
+  {word:'TENACITY', def:'Determined persistence; not giving up', part:'noun'},
+  {word:'VELVET', def:'A closely woven fabric of silk or nylon with a thick short pile', part:'noun'},
+  {word:'CRIMSON', def:'A rich, deep red colour', part:'noun/adjective'},
+  {word:'LABYRINTH', def:'A complicated irregular network of passages; a maze', part:'noun'},
+  {word:'OPAQUE', def:'Not able to be seen through; not transparent', part:'adjective'},
+  {word:'REVERIE', def:'A state of being pleasantly lost in thought; a daydream', part:'noun'},
+  {word:'SOMBER', def:'Dark or dull in colour or tone; serious and dignified', part:'adjective'},
+  {word:'WHIMSICAL', def:'Playfully quaint or fanciful; not serious', part:'adjective'},
+  {word:'TRANQUIL', def:'Free from disturbance; calm and peaceful', part:'adjective'},
+  {word:'OMINOUS', def:'Giving the impression that something bad is about to happen', part:'adjective'},
+  {word:'VIVID', def:'Producing powerful feelings; very bright or clear', part:'adjective'},
+];
+
+function shuffle(arr) { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+let questions=[], qIdx=0, current=null, input='', score=0, hintsUsed=0, qDone=0;
+let gameActive=false, answered=false;
+const TOTAL=10;
+
+function startGame() {
+  questions = shuffle(QUESTIONS).slice(0, TOTAL);
+  qIdx=0; score=0; qDone=0;
+  document.getElementById('score-val').textContent='0';
+  nextQuestion();
+}
+
+function nextQuestion() {
+  if (qIdx >= TOTAL) { showResult(); return; }
+  current = questions[qIdx]; input=''; hintsUsed=0; answered=false;
+  document.getElementById('q-num').textContent=`Question ${qIdx+1} of ${TOTAL}`;
+  document.getElementById('q-def').textContent=`"${current.def}"`;
+  document.getElementById('q-len').textContent=current.word.length;
+  document.getElementById('q-part-speech').textContent=current.part;
+  document.getElementById('prog-fill').style.width=`${(qIdx/TOTAL)*100}%`;
+  document.getElementById('prog-lbl').textContent=`${qIdx}/${TOTAL}`;
+  renderTiles(); buildKB();
+}
+
+function renderTiles() {
+  const row = document.getElementById('tiles-row');
+  row.innerHTML='';
+  for (let i=0; i<current.word.length; i++) {
+    const tile = document.createElement('div');
+    tile.className='ans-tile'+(i===input.length?' active':'');
+    if (i<input.length) tile.textContent=input[i];
+    if (i===input.length) { const c=document.createElement('div'); c.className='cursor-line'; tile.appendChild(c); }
+    tile.id=`atile-${i}`;
+    row.appendChild(tile);
+  }
+}
+
+const KB_ROWS=['QWERTYUIOP','ASDFGHJKL','⌫ZXCVBNM↵'];
+const usedKeys={};
+
+function buildKB() {
+  const kb=document.getElementById('kb');
+  kb.innerHTML='';
+  Object.keys(usedKeys).forEach(k=>delete usedKeys[k]);
+  KB_ROWS.forEach(row=>{
+    const div=document.createElement('div');
+    div.className='kb-row';
+    row.split('').forEach(k=>{
+      const btn=document.createElement('button');
+      btn.className='kkey'+(k==='⌫'||k==='↵'?' wide':'');
+      btn.textContent=k==='⌫'?'Del':k==='↵'?'Enter':k;
+      btn.id=`kk-${k}`;
+      btn.addEventListener('click',()=>{
+        if(k==='⌫') handleKey('Backspace');
+        else if(k==='↵') handleKey('Enter');
+        else handleKey(k);
+      });
+      div.appendChild(btn);
+    });
+    kb.appendChild(div);
+  });
+  // hint button
+  const hintBtn=document.createElement('button');
+  hintBtn.textContent='💡 Reveal a letter';
+  hintBtn.style.cssText='background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);border-radius:7px;padding:8px 16px;font-size:11px;font-weight:700;letter-spacing:.5px;cursor:pointer;font-family:DM Sans,sans-serif;margin-top:4px;display:block;margin-left:auto;margin-right:auto;transition:background .15s';
+  hintBtn.addEventListener('mouseenter',()=>hintBtn.style.background='var(--surface)');
+  hintBtn.addEventListener('mouseleave',()=>hintBtn.style.background='var(--surface2)');
+  hintBtn.addEventListener('click',giveHint);
+  kb.appendChild(hintBtn);
+}
+
+function handleKey(key) {
+  if (answered) return;
+  if (key==='Backspace') { input=input.slice(0,-1); renderTiles(); }
+  else if (key==='Enter') { checkAnswer(); }
+  else if (/^[A-Z]$/.test(key) && input.length<current.word.length) {
+    input+=key; renderTiles();
+  }
+}
+
+function giveHint() {
+  if (answered) return;
+  // reveal first unrevealed letter
+  for (let i=0; i<current.word.length; i++) {
+    if (!input[i] || input[i]!==current.word[i]) {
+      input=input.slice(0,i)+current.word[i]+input.slice(i+1);
+      hintsUsed++;
+      renderTiles();
+      // style as hint
+      const tile=document.getElementById(`atile-${i}`);
+      if(tile) tile.className='ans-tile hint';
+      showToast('Letter revealed (-2pts)','warn');
+      return;
+    }
+  }
+}
+
+function checkAnswer() {
+  if (input.length<current.word.length) { showToast('Complete the word first','warn'); return; }
+  if (input===current.word) {
+    answered=true;
+    const pts=Math.max(1,10-(hintsUsed*2));
+    score+=pts; qDone++;
+    document.getElementById('score-val').textContent=score;
+    // show correct tiles
+    for(let i=0;i<current.word.length;i++) {
+      const tile=document.getElementById(`atile-${i}`);
+      if(tile) tile.className='ans-tile correct';
+    }
+    showToast(`Correct! +${pts}`,'good');
+    setTimeout(()=>{ qIdx++; nextQuestion(); },1200);
+  } else {
+    // flash wrong
+    for(let i=0;i<input.length;i++){
+      const tile=document.getElementById(`atile-${i}`);
+      if(tile&&input[i]!==current.word[i]){tile.className='ans-tile wrong';setTimeout(()=>{if(tile)tile.className='ans-tile';},500);}
+    }
+    showToast('Not quite right','error');
+    input=''; setTimeout(renderTiles,500);
+  }
+}
+
+function showResult() {
+  document.getElementById('prog-fill').style.width='100%';
+  document.getElementById('prog-lbl').textContent=`${TOTAL}/${TOTAL}`;
+  document.getElementById('res-icon').textContent=score>=80?'🏆':score>=50?'🎉':'📚';
+  document.getElementById('res-title').textContent=score>=80?'Vocabulary Ace!':score>=50?'Well done!':'Keep reading!';
+  document.getElementById('final-score').textContent=score;
+  document.getElementById('result-overlay').classList.add('show');
+}
+
+let toastT;
+function showToast(msg,type='info'){
+  const el=document.getElementById('toast');
+  const bg={error:'#c0392b',warn:'#d35400',good:'#1a3a2a',info:'#1e1e30'};
+  const fg={error:'#fff',warn:'#fff',good:'#52c98a',info:'#c0c0d8'};
+  el.textContent=msg;el.style.background=bg[type];el.style.color=fg[type];
+  el.classList.remove('show');void el.offsetWidth;el.classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2000);
+}
+
+document.getElementById('play-btn').addEventListener('click',()=>{
+  document.getElementById('landing').style.display='none';
+  document.getElementById('game').classList.add('active');
+  gameActive=true; startGame();
+});
+document.getElementById('back-btn').addEventListener('click',()=>{
+  document.getElementById('landing').style.display='flex';
+  document.getElementById('game').classList.remove('active');
+  document.getElementById('result-overlay').classList.remove('show');
+  gameActive=false;
+});
+document.getElementById('res-home').addEventListener('click',()=>{
+  document.getElementById('result-overlay').classList.remove('show');
+  document.getElementById('landing').style.display='flex';
+  document.getElementById('game').classList.remove('active');
+  gameActive=false;
+});
+document.getElementById('res-play').addEventListener('click',()=>{
+  document.getElementById('result-overlay').classList.remove('show');
+  startGame();
+});
+document.addEventListener('keydown',e=>{
+  if(!gameActive)return;
+  if(e.key==='Enter'){e.preventDefault();handleKey('Enter');}
+  else if(e.key==='Backspace'){e.preventDefault();handleKey('Backspace');}
+  else if(/^[a-zA-Z]$/.test(e.key))handleKey(e.key.toUpperCase());
+});
+</script>
+</body>
+</html>

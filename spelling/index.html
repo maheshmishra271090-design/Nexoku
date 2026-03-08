@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Spelling</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f1a;--surface:#131320;--surface2:#1a1a2a;--border:#1e1e30;--gold:#F5C518;--text:#ddddf0;--text-muted:#55556a;--text-dim:#2a2a3e;--error:#c0392b;--warn:#d35400;--good-bg:#1a3a2a;--good-fg:#52c98a}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;height:100%}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;height:100%;height:100dvh;overflow:hidden;display:flex;flex-direction:column;align-items:center;-webkit-tap-highlight-color:transparent}
+button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+
+/* LANDING */
+#landing{width:100%;height:100%;height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:20px 20px calc(20px + env(safe-area-inset-bottom))}
+#landing-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden;opacity:.07}
+.landing-hero{display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;z-index:1}
+.landing-eyebrow{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;opacity:.8}
+.landing-title{font-family:'DM Serif Display',serif;font-size:clamp(44px,14vw,90px);color:var(--text);line-height:.9;letter-spacing:-2px;margin-bottom:6px}
+.landing-title span{color:var(--gold)}
+.landing-subtitle{font-size:12px;color:var(--text-muted);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:clamp(16px,4vw,28px);font-weight:500}
+.hex-preview{margin-bottom:clamp(16px,4vw,28px);opacity:.9;animation:floatHex 4s ease-in-out infinite}
+@keyframes floatHex{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.play-btn{background:var(--gold);color:var(--bg);border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:15px 48px;border-radius:50px;min-height:52px;transition:transform .2s,box-shadow .2s,background .15s;box-shadow:0 0 28px rgba(245,197,24,.25),0 4px 16px rgba(0,0,0,.4);margin-bottom:14px;touch-action:manipulation}
+.play-btn:hover{background:#ffdb1a;transform:scale(1.04) translateY(-2px)}
+.play-btn:active{transform:scale(.97)}
+.landing-rules{display:flex;gap:10px;margin-top:clamp(16px,4vw,24px);flex-wrap:wrap;justify-content:center;max-width:400px;width:100%}
+.rule-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;flex:1;min-width:100px;max-width:130px;text-align:center}
+.rule-card .rule-icon{font-size:18px;margin-bottom:6px;display:block}
+.rule-card .rule-text{font-size:10px;color:var(--text-muted);line-height:1.5}
+.rule-card .rule-text strong{color:var(--text);display:block;margin-bottom:2px;font-size:11px}
+
+/* GAME */
+#game{display:none;width:100%;height:100%;height:100dvh;flex-direction:column;align-items:center;overflow:hidden;animation:pageIn .35s ease;padding-bottom:env(safe-area-inset-bottom)}
+#game.active{display:flex}
+@keyframes pageIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+header{width:100%;max-width:460px;display:flex;justify-content:space-between;align-items:center;padding:max(14px,env(safe-area-inset-top)) 20px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.logo{display:flex;align-items:center;gap:6px}
+.logo-back{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:20px;padding:4px 10px 4px 0;min-height:44px;min-width:44px;display:flex;align-items:center;transition:color .15s}
+.logo-back:hover{color:var(--gold)}
+.logo-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--gold);line-height:1.1}
+.logo-sub{font-size:10px;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:1px}
+#found-btn{background:transparent;border:1px solid #252538;border-radius:7px;padding:7px 14px;min-height:36px;font-size:12px;cursor:pointer;color:var(--text-muted);font-family:'DM Sans',sans-serif;letter-spacing:.4px;transition:background .15s}
+#found-btn:hover{background:var(--surface2)}
+main{width:100%;max-width:460px;padding:0 20px;flex:1;display:flex;flex-direction:column;overflow:hidden}
+.rank-row{display:flex;align-items:center;gap:10px;margin:12px 0 5px;flex-shrink:0}
+.rank-label{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.9px;text-transform:uppercase;min-width:72px}
+.progress-track{flex:1;height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--gold),#ffe066);border-radius:2px;box-shadow:0 0 6px rgba(245,197,24,.45);transition:width .55s cubic-bezier(.34,1.56,.64,1)}
+.score-num{font-size:13px;font-weight:700;color:var(--gold);min-width:26px;text-align:right}
+.divider{height:1px;background:var(--border);margin:8px 0;flex-shrink:0}
+#found-panel{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:10px 13px;margin-bottom:8px;max-height:100px;overflow-y:auto;display:none;animation:popIn .18s ease;flex-shrink:0}
+#found-panel.open{display:block}
+.found-word{display:inline-block;font-size:12px;color:#7070a0;margin:3px 5px 3px 0}
+.found-word.pangram{color:var(--gold);font-weight:700}
+.no-words{font-size:12px;color:var(--text-dim)}
+.input-area{display:flex;justify-content:center;align-items:center;min-height:52px;position:relative;margin:4px 0;flex-shrink:0}
+#word-display{font-family:'DM Serif Display',serif;font-size:clamp(22px,7vw,30px);letter-spacing:4px;display:flex;align-items:center}
+.letter-char{transition:color .08s}
+.letter-char.center{color:var(--gold)}
+.letter-char.valid{color:var(--text)}
+.letter-char.invalid{color:var(--error)}
+.placeholder-txt{font-size:14px;color:var(--text-dim);font-family:'DM Sans',sans-serif;letter-spacing:1px}
+.cursor{display:inline-block;width:2px;height:26px;background:var(--gold);margin-left:3px;vertical-align:middle;animation:cursorBlink 1s ease infinite}
+#toast{position:fixed;top:clamp(60px,12vw,80px);left:50%;transform:translateX(-50%);padding:7px 18px;border-radius:8px;font-size:12px;font-weight:700;white-space:nowrap;pointer-events:none;opacity:0;z-index:100;box-shadow:0 4px 18px rgba(0,0,0,.5)}
+#toast.show{animation:fadeUp 1.8s ease forwards}
+.hive-wrap{display:flex;justify-content:center;margin:0;flex:1;align-items:center}
+#hive{cursor:default;max-width:100%;max-height:100%}
+.hex-cell polygon{transition:fill .12s ease}
+.hex-cell text{pointer-events:none;user-select:none}
+.btn-row{display:flex;justify-content:center;gap:10px;margin:8px 0 12px;flex-shrink:0}
+.btn{padding:11px 20px;border-radius:8px;font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .13s,transform .1s;border:1px solid #252538;background:var(--surface);color:var(--text-muted);min-height:44px;flex:1;max-width:110px;touch-action:manipulation}
+.btn:hover{background:var(--surface2)}
+.btn:active{transform:scale(.95)}
+.btn.primary{background:var(--gold);color:var(--bg);border-color:transparent}
+.btn.primary:hover{background:#e8c400}
+.hint-row{text-align:center;color:var(--text-dim);font-size:10px;margin-bottom:8px;letter-spacing:.5px;flex-shrink:0}
+
+@keyframes shake-el{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes fadeUp{0%{opacity:0;transform:translate(-50%,-6px) scale(.94)}12%{opacity:1;transform:translate(-50%,0) scale(1)}78%{opacity:1;transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,-8px) scale(.94)}}
+@keyframes popIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
+</style>
+</head>
+<body>
+
+<section id="landing">
+  <svg id="landing-bg" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style="position:absolute;inset:0">
+    <defs><pattern id="hexpat" x="0" y="0" width="90" height="104" patternUnits="userSpaceOnUse"><polygon points="45,2 83,23 83,81 45,102 7,81 7,23" fill="none" stroke="#F5C518" stroke-width="1.5"/></pattern></defs>
+    <rect width="100%" height="100%" fill="url(#hexpat)"/>
+  </svg>
+  <div class="landing-hero">
+    <div class="landing-eyebrow">Word Puzzle · Daily</div>
+    <div class="landing-title">Spell<span>ing</span></div>
+    <div class="landing-subtitle">Find every word · Daily challenge</div>
+    <svg class="hex-preview" viewBox="0 0 180 160" width="clamp(140px,45vw,180px)" height="clamp(124px,40vw,160px)">
+      <g transform="translate(90,80)">
+        <g transform="translate(0,-62)"><polygon points="0,-28 24.2,-14 24.2,14 0,28 -24.2,14 -24.2,-14" fill="#1e1e2e" stroke="#0f0f1a" stroke-width="2"/><text text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" font-family="DM Serif Display,Georgia,serif" fill="#c0c0d8">A</text></g>
+        <g transform="translate(53.8,-31)"><polygon points="0,-28 24.2,-14 24.2,14 0,28 -24.2,14 -24.2,-14" fill="#1e1e2e" stroke="#0f0f1a" stroke-width="2"/><text text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" font-family="DM Serif Display,Georgia,serif" fill="#c0c0d8">R</text></g>
+        <g transform="translate(53.8,31)"><polygon points="0,-28 24.2,-14 24.2,14 0,28 -24.2,14 -24.2,-14" fill="#1e1e2e" stroke="#0f0f1a" stroke-width="2"/><text text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" font-family="DM Serif Display,Georgia,serif" fill="#c0c0d8">E</text></g>
+        <g transform="translate(0,62)"><polygon points="0,-28 24.2,-14 24.2,14 0,28 -24.2,14 -24.2,-14" fill="#1e1e2e" stroke="#0f0f1a" stroke-width="2"/><text text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" font-family="DM Serif Display,Georgia,serif" fill="#c0c0d8">S</text></g>
+        <g transform="translate(-53.8,31)"><polygon points="0,-28 24.2,-14 24.2,14 0,28 -24.2,14 -24.2,-14" fill="#1e1e2e" stroke="#0f0f1a" stroke-width="2"/><text text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" font-family="DM Serif Display,Georgia,serif" fill="#c0c0d8">I</text></g>
+        <g transform="translate(-53.8,-31)"><polygon points="0,-28 24.2,-14 24.2,14 0,28 -24.2,14 -24.2,-14" fill="#1e1e2e" stroke="#0f0f1a" stroke-width="2"/><text text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" font-family="DM Serif Display,Georgia,serif" fill="#c0c0d8">N</text></g>
+        <g><polygon points="0,-28 24.2,-14 24.2,14 0,28 -24.2,14 -24.2,-14" fill="#F5C518" stroke="#0f0f1a" stroke-width="2" style="filter:drop-shadow(0 0 10px rgba(245,197,24,.55))"/><text text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" font-family="DM Serif Display,Georgia,serif" fill="#0f0f1a">T</text></g>
+      </g>
+    </svg>
+    <button class="play-btn" id="play-btn">Play Today's Puzzle</button>
+  </div>
+  <div class="landing-rules">
+    <div class="rule-card"><span class="rule-icon">✦</span><div class="rule-text"><strong>4+ letters</strong>At least 4 letters long</div></div>
+    <div class="rule-card"><span class="rule-icon" style="color:var(--gold)">◆</span><div class="rule-text"><strong>Use center</strong>Gold letter in every word</div></div>
+    <div class="rule-card"><span class="rule-icon">🌟</span><div class="rule-text"><strong>Pangram</strong>Use all 7 for bonus</div></div>
+  </div>
+</section>
+
+<div id="game">
+  <header>
+    <div class="logo">
+      <button class="logo-back" id="back-btn" title="Home">←</button>
+      <div><div class="logo-title">Spelling</div><div class="logo-sub">Daily · Find All Words</div></div>
+    </div>
+    <button id="found-btn">0 found</button>
+  </header>
+  <main>
+    <div class="rank-row">
+      <span class="rank-label" id="rank-label">Beginner</span>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      <span class="score-num" id="score-num">0</span>
+    </div>
+    <div class="divider"></div>
+    <div id="found-panel"><span class="no-words">No words yet</span></div>
+    <div class="input-area">
+      <div id="toast"></div>
+      <div id="word-display"><span class="placeholder-txt">Type a word...</span><span class="cursor"></span></div>
+    </div>
+    <div class="hive-wrap">
+      <svg id="hive" viewBox="24 -20 192 276" width="min(280px, 80vw)" height="min(310px, 89vw)"></svg>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="btn-delete">Delete</button>
+      <button class="btn" id="btn-shuffle">Shuffle</button>
+      <button class="btn primary" id="btn-enter">Enter</button>
+    </div>
+    <div class="hint-row">Space to shuffle · Type or click · Enter to submit</div>
+  </main>
+</div>
+
+<script>
+const PUZZLE={center:'T',outer:['A','R','E','S','I','N'],pangrams:['RETAINS','NASTIER','RETSINA','ANTSIER','STAINER','STEARIN'],words:[...new Set(['ANTIS','ANTES','ANTI','ANTE','ANES','ANISE','AIRNS','AIRN','AINS','REIN','REINS','RENT','RENTS','RANI','RANIS','RAIN','RAINS','RAISE','RANT','RANTS','RATE','RATES','IRATE','INERT','INERTS','NARES','NARIS','NEAR','NEARS','NEAT','NEATS','NEST','EARN','EARNS','EARS','EAST','IRES','SATIN','SAINT','SANER','SIREN','SIRE','SITE','SINE','STERN','STAIN','STAIR','STARE','STAR','STIR','STEIN','STRAIN','TRAIN','TRAINS','TSAR','TARS','TARN','TARNS','TANS','TARE','TARES','TIRE','TIRES','TIER','TIERS','SATIRE','RETAIN','RETAINS','NASTIER','RETSINA','ANTSIER','STAINER','STEARIN','RETINA','RETINAS','TRANS','ANTS','RATS','ARTS','SNIT','NITS','TINS'])]};
+const RANKS=[{name:'Beginner',t:0},{name:'Good Start',t:.02},{name:'Moving Up',t:.05},{name:'Good',t:.08},{name:'Solid',t:.15},{name:'Nice',t:.25},{name:'Great',t:.40},{name:'Amazing',t:.50},{name:'Genius',t:.70},{name:'Queen Bee',t:1.0}];
+let input='',found=[],shuffled=[...PUZZLE.outer],gameActive=false;
+const allLetters=[PUZZLE.center,...PUZZLE.outer];
+const maxScore=PUZZLE.words.reduce((s,w)=>s+wordScore(w),0);
+function wordScore(w){if(w.length===4)return 1;if(PUZZLE.pangrams.includes(w.toUpperCase()))return w.length+7;return w.length}
+function getScore(){return found.reduce((s,w)=>s+wordScore(w),0)}
+function getRank(score){const pct=maxScore>0?score/maxScore:0;let r=RANKS[0];RANKS.forEach(rank=>{if(pct>=rank.t)r=rank});return r}
+function isPangram(w){return PUZZLE.pangrams.includes(w.toUpperCase())}
+function showGame(){document.getElementById('landing').style.display='none';document.getElementById('game').classList.add('active');gameActive=true;buildHive();renderInput();renderScore();renderFound()}
+function showLanding(){document.getElementById('landing').style.display='flex';document.getElementById('game').classList.remove('active');gameActive=false}
+document.getElementById('play-btn').addEventListener('click',showGame);
+document.getElementById('back-btn').addEventListener('click',showLanding);
+const R=34,DX=R*Math.sqrt(3),DY=R*1.5,CX=120,CY=116;
+const HEX_POS=[[CX,CY-DY*2],[CX+DX,CY-DY],[CX+DX,CY+DY],[CX,CY+DY*2],[CX-DX,CY+DY],[CX-DX,CY-DY],[CX,CY]];
+const pts=Array.from({length:6},(_,i)=>{const a=Math.PI/180*(60*i-30);return `${(R*Math.cos(a)).toFixed(2)},${(R*Math.sin(a)).toFixed(2)}`}).join(' ');
+function buildHive(){
+  const svg=document.getElementById('hive');svg.innerHTML='';
+  const letters=[...shuffled,PUZZLE.center];
+  letters.forEach((letter,i)=>{
+    const isCenter=i===6,[cx,cy]=HEX_POS[i];
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','hex-cell');g.setAttribute('transform',`translate(${cx},${cy})`);
+    const poly=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    poly.setAttribute('points',pts);poly.setAttribute('fill',isCenter?'#F5C518':'#1e1e2e');poly.setAttribute('stroke','#0f0f1a');poly.setAttribute('stroke-width','2.5');
+    poly.style.filter=isCenter?'drop-shadow(0 0 7px rgba(245,197,24,.4))':'drop-shadow(0 2px 5px rgba(0,0,0,.5))';
+    const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    txt.setAttribute('text-anchor','middle');txt.setAttribute('dominant-baseline','central');txt.setAttribute('font-size','16');txt.setAttribute('font-weight','700');txt.setAttribute('font-family','DM Serif Display,Georgia,serif');txt.setAttribute('fill',isCenter?'#0f0f1a':'#c0c0d8');txt.textContent=letter;
+    g.appendChild(poly);g.appendChild(txt);
+    g.addEventListener('mouseenter',()=>{poly.setAttribute('fill',isCenter?'#e8c400':'#2a2a3e');if(isCenter)poly.style.filter='drop-shadow(0 0 12px rgba(245,197,24,.5))'});
+    g.addEventListener('mouseleave',()=>{poly.setAttribute('fill',isCenter?'#F5C518':'#1e1e2e');poly.style.filter=isCenter?'drop-shadow(0 0 7px rgba(245,197,24,.4))':'drop-shadow(0 2px 5px rgba(0,0,0,.5))'});
+    g.addEventListener('mousedown',()=>poly.setAttribute('fill',isCenter?'#c8a800':'#363648'));
+    g.addEventListener('mouseup',()=>poly.setAttribute('fill',isCenter?'#F5C518':'#1e1e2e'));
+    g.addEventListener('click',()=>addLetter(letter));
+    svg.appendChild(g);
+  });
+}
+function renderInput(){const el=document.getElementById('word-display');if(input.length===0){el.innerHTML='<span class="placeholder-txt">Type a word...</span><span class="cursor"></span>';return}let html='';for(const ch of input.toUpperCase()){const cls=ch===PUZZLE.center?'center':allLetters.includes(ch)?'valid':'invalid';html+=`<span class="letter-char ${cls}">${ch}</span>`}html+='<span class="cursor"></span>';el.innerHTML=html}
+function renderScore(){const score=getScore(),rank=getRank(score),pct=maxScore>0?(score/maxScore)*100:0;document.getElementById('rank-label').textContent=rank.name;document.getElementById('score-num').textContent=score;document.getElementById('progress-fill').style.width=Math.min(100,pct)+'%'}
+function renderFound(){const btn=document.getElementById('found-btn'),panel=document.getElementById('found-panel');btn.textContent=found.length+' found';if(found.length===0){panel.innerHTML='<span class="no-words">No words yet</span>';return}panel.innerHTML=[...found].sort().map(w=>`<span class="found-word${isPangram(w)?' pangram':''}">${w}</span>`).join('')}
+let toastTimer=null;
+function showToast(msg,type='info'){const el=document.getElementById('toast'),styles={error:{bg:'#c0392b',color:'#fff'},warn:{bg:'#d35400',color:'#fff'},good:{bg:'#1a3a2a',color:'#52c98a'},pangram:{bg:'#F5C518',color:'#0f0f1a'},info:{bg:'#1e1e30',color:'#c0c0d8'}},s=styles[type]||styles.info;el.textContent=msg;el.style.background=s.bg;el.style.color=s.color;el.classList.remove('show');void el.offsetWidth;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),1800)}
+function shakeInput(){const el=document.getElementById('word-display');el.style.animation='none';void el.offsetWidth;el.style.animation='shake-el .42s ease';setTimeout(()=>el.style.animation='',500)}
+function addLetter(letter){input+=letter;renderInput()}
+function deleteLetter(){input=input.slice(0,-1);renderInput()}
+function shuffleOuter(){for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]]}buildHive()}
+function submit(){
+  const word=input.toUpperCase().trim();
+  if(word.length<4){showToast('Too short!','error');shakeInput();input='';renderInput();return}
+  if(!word.includes(PUZZLE.center)){showToast(`Must use ${PUZZLE.center}`,'error');shakeInput();input='';renderInput();return}
+  if(found.includes(word)){showToast('Already found!','warn');shakeInput();input='';renderInput();return}
+  if([...word].some(c=>!allLetters.includes(c))){showToast('Bad letters!','error');shakeInput();input='';renderInput();return}
+  if(!PUZZLE.words.map(w=>w.toUpperCase()).includes(word)){showToast('Not in word list','error');shakeInput();input='';renderInput();return}
+  const pts2=wordScore(word);found.push(word);input='';renderInput();renderFound();renderScore();
+  if(isPangram(word))showToast(`🌟 Pangram! +${pts2}`,'pangram');else if(pts2<=3)showToast('Good!','good');else if(pts2<=5)showToast('Nice!','good');else showToast('Amazing!','good');
+}
+document.getElementById('btn-delete').addEventListener('click',deleteLetter);
+document.getElementById('btn-shuffle').addEventListener('click',shuffleOuter);
+document.getElementById('btn-enter').addEventListener('click',submit);
+document.getElementById('found-btn').addEventListener('click',()=>document.getElementById('found-panel').classList.toggle('open'));
+document.addEventListener('keydown',e=>{if(!gameActive)return;if(e.key==='Enter'){e.preventDefault();submit()}else if(e.key==='Backspace'){e.preventDefault();deleteLetter()}else if(e.key===' '){e.preventDefault();shuffleOuter()}else{const ch=e.key.toUpperCase();if(allLetters.includes(ch))addLetter(ch)}});
+</script>
+</body>
+</html>

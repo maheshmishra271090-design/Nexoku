@@ -736,64 +736,71 @@ function startTicker() {
 }
 function stopTicker() { clearInterval(tickerInterval); }
 
-const SYSTEM_PROMPT = `You are DailyBuzz, an AI that creates daily news quiz questions for Indian audiences.
+const GNEWS_KEY = '62df95ba2bb69149153fbc603d08b5a6';
+const GNEWS_TOPICS = [
+  { q: 'India politics economy',   cat: 'news'          },
+  { q: 'cricket India IPL',        cat: 'sport'         },
+  { q: 'Bollywood movies India',   cat: 'entertainment' },
+  { q: 'India technology ISRO startup', cat: 'tech'     },
+];
 
-Today's date: ${new Date().toLocaleDateString('en-IN', {weekday:'long', day:'numeric', month:'long', year:'numeric'})}.
-
-Generate exactly 5 quiz questions covering a mix of:
-- Current Indian news & politics (government, elections, policy, economy)
-- Cricket & sports (IPL, Test cricket, other sports)
-- Bollywood & entertainment (movies, celebrities, OTT)
-- Science, technology & startups (ISRO, Indian tech, global tech)
-
-Rules:
-- Questions must be based on REAL, VERIFIABLE current events from roughly the past 1-3 months
-- Each question must have exactly 4 options (A, B, C, D)
-- Only one option is correct
-- Include a brief explanation (1-2 sentences) for why the answer is correct
-- Questions should be engaging, not too easy but not obscure
-
-Respond ONLY with a valid JSON object, no markdown fences, no extra text:
-{
-  "date": "YYYY-MM-DD",
-  "questions": [
-    {
-      "id": 1,
-      "category": "news|sport|entertainment|tech",
-      "categoryLabel": "Indian News",
-      "question": "...",
-      "options": ["...", "...", "...", "..."],
-      "correct": 0,
-      "explanation": "..."
-    }
-  ]
+async function fetchGNews(query) {
+  const url = `https://gnews.io/api/v4/search?q=${encodeURIComponent(query)}&lang=en&max=4&apikey=${GNEWS_KEY}`;
+  const res = await fetch(url);
+  if (!res.ok) return '';
+  const data = await res.json();
+  return (data.articles || [])
+    .map(a => `• ${a.title} (${(a.source && a.source.name) || 'source'}): ${a.description || ''}`)
+    .join('\n');
 }
-
-The "correct" field is the 0-based index of the correct option.
-Categories: use "news" for politics/current affairs, "sport" for sports, "entertainment" for Bollywood/OTT, "tech" for science/technology.`;
 
 async function generateQuiz() {
   showScreen('screen-loading');
   startTicker();
 
   try {
+    // Fetch live headlines from GNews for all 4 categories
+    const newsBlocks = await Promise.all(
+      GNEWS_TOPICS.map(t => fetchGNews(t.q).catch(() => ''))
+    );
+
+    const newsContext = GNEWS_TOPICS.map((t, i) =>
+      `[${t.cat.toUpperCase()}]\n${newsBlocks[i] || 'No articles.'}`
+    ).join('\n\n');
+
+    const systemPrompt = `You are DailyBuzz, an AI quiz maker for Indian audiences.
+Today: ${new Date().toLocaleDateString('en-IN', {weekday:'long', day:'numeric', month:'long', year:'numeric'})}.
+
+You will receive REAL current news headlines. Create exactly 5 quiz questions strictly from these headlines.
+
+Rules:
+- Base every question directly on the provided headlines — do not invent events
+- Each question has exactly 4 options; only one is correct
+- Include a 1-2 sentence explanation
+- Cover all 4 categories: news, sport, entertainment, tech (at least 1 each)
+
+Respond ONLY with valid JSON, no markdown, no extra text:
+{"date":"YYYY-MM-DD","questions":[{"id":1,"category":"news|sport|entertainment|tech","question":"...","options":["...","...","...","..."],"correct":0,"explanation":"..."}]}
+"correct" is the 0-based index of the correct option.`;
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 2000,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: `Generate today's DailyBuzz India news quiz for ${getTodayKey()}. Make all questions based on genuine recent news events from India. Return only the JSON.` }]
+        system: systemPrompt,
+        messages: [{
+          role: 'user',
+          content: `Today's live headlines:\n\n${newsContext}\n\nGenerate 5 DailyBuzz quiz questions from these headlines. Return only the JSON.`
+        }]
       })
     });
 
     if (!response.ok) throw new Error(`API error ${response.status}`);
     const data = await response.json();
     const raw = data.content.map(b => b.text || '').join('');
-
-    // Strip markdown fences if present
-    const clean = raw.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+    const clean = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
     const quiz = JSON.parse(clean);
 
     stopTicker();

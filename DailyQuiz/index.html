@@ -752,25 +752,54 @@ const RSS_FEEDS = [
   { url: 'https://news.google.com/rss/search?q=india+technology+ISRO+startup&hl=en-IN&gl=IN&ceid=IN:en', cat: 'tech',    label: '💡 Science & Tech'    },
 ];
 
-// Multiple CORS proxies — tries each until one works
+// CORS proxy chain — reliable proxies only (cors-anywhere requires manual opt-in, excluded)
 const PROXIES = [
-  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-  url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-  url => `https://cors-anywhere.herokuapp.com/${url}`,
-  url => `https://thingproxy.freeboard.io/fetch/${url}`,
+  // corsproxy.io — fast, no key required, raw XML
+  url => ({ endpoint: `https://corsproxy.io/?${encodeURIComponent(url)}`, mode: 'raw' }),
+  // allorigins — returns JSON wrapper {contents, status}
+  url => ({ endpoint: `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, mode: 'allorigins' }),
+  // allorigins raw endpoint
+  url => ({ endpoint: `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`, mode: 'raw' }),
+  // corsproxy.org — solid fallback
+  url => ({ endpoint: `https://corsproxy.org/?${encodeURIComponent(url)}`, mode: 'raw' }),
+  // thingproxy — last resort
+  url => ({ endpoint: `https://thingproxy.freeboard.io/fetch/${url}`, mode: 'raw' }),
 ];
 
 async function fetchWithProxy(url) {
   for (const makeProxy of PROXIES) {
     try {
-      const res = await fetch(makeProxy(url), { signal: AbortSignal.timeout(6000) });
+      const { endpoint, mode } = makeProxy(url);
+      const res = await fetch(endpoint, {
+        signal: AbortSignal.timeout(7000),
+        headers: mode === 'raw' ? { 'X-Requested-With': 'XMLHttpRequest' } : {}
+      });
       if (!res.ok) continue;
       const text = await res.text();
-      // allorigins wraps in JSON {contents:...}, others return raw XML
-      if (text.trim().startsWith('{')) {
-        try { return JSON.parse(text).contents || text; } catch { return text; }
+      if (!text || text.length < 50) continue;
+
+      if (mode === 'allorigins') {
+        try {
+          const json = JSON.parse(text);
+          const contents = json.contents || '';
+          if (contents.includes('<item>') || contents.includes('<?xml')) return contents;
+          continue;
+        } catch { continue; }
       }
-      return text;
+
+      // Raw mode: validate it looks like RSS/XML
+      const trimmed = text.trim();
+      if (trimmed.startsWith('<') || trimmed.includes('<rss') || trimmed.includes('<item>')) {
+        return text;
+      }
+      // Some proxies wrap in JSON even in raw mode
+      if (trimmed.startsWith('{')) {
+        try {
+          const json = JSON.parse(trimmed);
+          const c = json.contents || json.body || json.data || '';
+          if (c.includes('<item>')) return c;
+        } catch {}
+      }
     } catch { continue; }
   }
   return null;
@@ -907,15 +936,42 @@ async function generateQuiz() {
       }
     }
 
-    if (questions.length === 0) throw new Error('No news articles found. Check your connection.');
+    if (questions.length === 0) throw new Error('proxy_fail');
 
     stopTicker();
     startQuiz(questions);
 
   } catch (err) {
     stopTicker();
-    showError(err.message || 'Failed to load news');
+    if (err.message === 'proxy_fail' || err.message.includes('No news')) {
+      // All proxies failed — use static fallback quiz so game still works
+      startQuiz(getStaticFallbackQuiz());
+    } else {
+      showError(err.message || 'Failed to load news');
+    }
   }
+}
+
+function getStaticFallbackQuiz() {
+  // Curated static questions shown when all CORS proxies fail
+  const pool = [
+    { category:'sport', question:'Which team won the IPL 2024 title?', options:['Kolkata Knight Riders','Mumbai Indians','Chennai Super Kings','Royal Challengers Bengaluru'], correct:0, explanation:'KKR won their third IPL title in 2024, defeating SunRisers Hyderabad in the final.' },
+    { category:'news', question:'Who is the current Prime Minister of India?', options:['Narendra Modi','Rahul Gandhi','Amit Shah','Yogi Adityanath'], correct:0, explanation:'Narendra Modi has been serving as Prime Minister of India since 2014.' },
+    { category:'tech', question:'Which Indian space agency successfully launched Chandrayaan-3?', options:['ISRO','DRDO','NASA','ESA'], correct:0, explanation:'ISRO\'s Chandrayaan-3 successfully landed near the Moon\'s south pole in August 2023.' },
+    { category:'entertainment', question:'Which Bollywood film crossed ₹500 crore at the box office in 2023?', options:['Jawan','Pathaan','Animal','Gadar 2'], correct:0, explanation:'Jawan, starring Shah Rukh Khan and directed by Atlee, crossed ₹500 crore worldwide.' },
+    { category:'news', question:'Which city hosted the G20 Summit in India in 2023?', options:['New Delhi','Mumbai','Bengaluru','Chennai'], correct:0, explanation:'India hosted the G20 Summit in New Delhi in September 2023.' },
+    { category:'sport', question:'Who won the ICC Cricket World Cup 2023?', options:['Australia','India','South Africa','England'], correct:0, explanation:'Australia defeated India in the final to win the ICC ODI World Cup 2023.' },
+    { category:'tech', question:'Which Indian company became the most valuable brand in Asia in 2024?', options:['Reliance Industries','Tata Group','Infosys','HDFC Bank'], correct:0, explanation:'Reliance Industries topped the charts as the most valuable Indian brand.' },
+    { category:'entertainment', question:'Which OTT platform exclusively streams most Bollywood blockbusters in India?', options:['Netflix','Amazon Prime Video','Disney+ Hotstar','JioCinema'], correct:2, explanation:'Disney+ Hotstar holds rights to many major Bollywood releases in India.' },
+    { category:'news', question:'Which Indian state has the highest GDP as of 2024?', options:['Maharashtra','Uttar Pradesh','Karnataka','Gujarat'], correct:0, explanation:'Maharashtra consistently leads Indian states in GDP contribution.' },
+    { category:'sport', question:'Who holds the record for most international centuries in cricket?', options:['Sachin Tendulkar','Virat Kohli','Ricky Ponting','Kumar Sangakkara'], correct:0, explanation:'Sachin Tendulkar holds the record with 100 international centuries.' },
+  ];
+  // Shuffle and pick 5
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, 5).map((q, i) => ({ ...q, id: i + 1, sourceLink: '', isStatic: true }));
 }
 
 function showError(msg) {
